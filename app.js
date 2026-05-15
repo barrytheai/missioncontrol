@@ -57,20 +57,17 @@ const defaultProjects = [
 let projects = loadProjects();
 
 let agents = [
-  { id: "scout", name: "Scout", role: "Research", status: "Connected", model: "OpenAI GPT-5.5" },
-  { id: "analyst", name: "Analyst", role: "Analysis", status: "Connected", model: "Claude Opus 4.6" },
-  { id: "builder", name: "Builder", role: "Frontend", status: "Connected", model: "OpenAI GPT-5.5 Codex" },
-  { id: "guardian", name: "Guardian", role: "Run Health", status: "Run Health", model: "OpenAI GPT-5.4" },
-  { id: "operator", name: "Operator", role: "Ops", status: "Connected", model: "OpenAI GPT-5.5" },
-  { id: "scribe", name: "Scribe", role: "Documentation", status: "Connected", model: "Claude Sonnet 4.5" },
-  { id: "resolver", name: "Resolver", role: "QA", status: "Run Health", model: "OpenAI GPT-5.4" },
-  { id: "navigator", name: "Navigator", role: "Planning", status: "Connected", model: "OpenAI GPT-5.5" }
+  { id: "cece", name: "Cece", role: "Founder", status: "Connected", model: "Human" },
+  { id: "barry", name: "Barry", role: "Growth Agent", status: "Connected", model: "claude-sonnet-4-6" },
+  { id: "robbie", name: "Robbie", role: "Marketing Execution", status: "Connected", model: "claude-sonnet-4-6" },
+  { id: "emma", name: "Emma", role: "Social Listening", status: "Connected", model: "moonshot/kimi-k2.5" }
 ];
 
 const missionAgents = [
-  { name: "Designer", role: "UI/UX", status: "Connected" },
-  { name: "Builder", role: "Frontend", status: "Connected" },
-  { name: "Optimizer", role: "Performance", status: "Run Health" }
+  { name: "Cece", role: "Founder", status: "Connected" },
+  { name: "Barry", role: "Growth Agent", status: "Connected" },
+  { name: "Robbie", role: "Marketing Execution", status: "Connected" },
+  { name: "Emma", role: "Social Listening", status: "Connected" }
 ];
 
 const seedTasks = [
@@ -198,11 +195,11 @@ const seedTasks = [
 
 let events = [
   ["10:24:18", "ok", "Task", "Website Redesign moved to In Progress", "Cece"],
-  ["10:24:10", "info", "Builder", "Started task: Update hero component", "Website Redesign"],
-  ["10:23:47", "ok", "Optimizer", "Run health check completed", "All systems normal"],
-  ["10:23:31", "warn", "Guardian", "High memory usage detected", "82%"],
-  ["10:22:59", "info", "Analyst", "Data sync completed", "Q2 Market Analysis"],
-  ["10:22:41", "ok", "Scribe", "Documentation updated", "API Docs Overhaul"]
+  ["10:24:10", "info", "Barry", "Started task: Update hero component", "Website Redesign"],
+  ["10:23:47", "ok", "Barry", "Run health check completed", "All systems normal"],
+  ["10:23:31", "warn", "Barry", "High memory usage detected", "82%"],
+  ["10:22:59", "info", "Robbie", "Data sync completed", "Q2 Market Analysis"],
+  ["10:22:41", "ok", "Robbie", "Documentation updated", "API Docs Overhaul"]
 ];
 
 const state = {
@@ -281,7 +278,7 @@ function loadMemories() {
   const defaults = [
     { id: "mem-1", title: "Project facts", body: "Brand voice is concise, operational, and Linear-inspired." },
     { id: "mem-2", title: "Decisions", body: "Tasks replace missions in navigation and creation flows." },
-    { id: "mem-3", title: "Agent notes", body: "Builder owns UI implementation; Optimizer owns run health." },
+    { id: "mem-3", title: "Agent notes", body: "Barry handles growth and deployment. Robbie handles research and content. Emma handles social listening." },
     { id: "mem-4", title: "Reusable context", body: "OpenClaw agents need webhook, API key, and memory hooks." }
   ];
   try {
