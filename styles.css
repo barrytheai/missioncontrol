@@ -556,6 +556,11 @@ kbd {
   color: #d0d6e2;
   font-size: 14px;
   line-height: 1.55;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
 
 .card-menu {
