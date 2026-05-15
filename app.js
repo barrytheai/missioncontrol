@@ -304,6 +304,26 @@ function persistCalendarItems() {
   localStorage.setItem(CALENDAR_KEY, JSON.stringify(state.calendarItems));
 }
 
+async function loadCalendarFromAPI() {
+  try {
+    const r = await fetch(`${API_BASE}/api/calendar`);
+    const d = await r.json();
+    if (Array.isArray(d.events) && d.events.length > 0) {
+      state.calendarItems = d.events.map(e => ({
+        id: e.id,
+        title: e.title,
+        date: e.date,
+        time: e.time || "09:00",
+        owner: (e.agent_ids || [])[0] || "Cece",
+        notes: e.description || "",
+        recurring: "none"
+      }));
+      localStorage.setItem(CALENDAR_KEY, JSON.stringify(state.calendarItems));
+      render();
+    }
+  } catch {}
+}
+
 function loadProjects() {
   try {
     return JSON.parse(localStorage.getItem(PROJECT_KEY) || "null") || defaultProjects;
@@ -341,6 +361,17 @@ async function loadRemoteState(silent = false) {
     state.tasks = remote.tasks || state.tasks;
     agents = normalizeAgents(remote.agents || agents);
     events = remote.events || events;
+    if (Array.isArray(remote.calendarEvents) && remote.calendarEvents.length > 0) {
+      state.calendarItems = remote.calendarEvents.map(e => ({
+        id: e.id,
+        title: e.title,
+        date: e.date,
+        time: e.time || "09:00",
+        owner: (e.agent_ids || [])[0] || "Cece",
+        notes: e.description || "",
+        recurring: "none"
+      }));
+    }
     persist();
     render();
   } catch (error) {
@@ -1586,6 +1617,22 @@ function saveCalendarItem() {
   };
   if (isEditing) {
     state.calendarItems = state.calendarItems.filter((item) => item.id !== state.openCalendarItemId);
+    fetch(`${API_BASE}/api/calendar/${state.openCalendarItemId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: item.title, date: item.date, time: item.time, description: item.notes, agentIds: item.owner ? [item.owner.toLowerCase()] : [] })
+    }).catch(() => {});
+  } else {
+    fetch(`${API_BASE}/api/calendar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: item.title, date: item.date, time: item.time, description: item.notes, agentIds: item.owner ? [item.owner.toLowerCase()] : [] })
+    }).then(r => r.json()).then(d => {
+      if (d.event?.id) {
+        item.id = d.event.id;
+        persistCalendarItems();
+      }
+    }).catch(() => {});
   }
   state.calendarItems.push(item);
   state.calendarComposerOpen = false;
@@ -1607,6 +1654,9 @@ function deleteCalendarItem(id) {
   state.calendarItems = state.calendarItems.filter((item) => item.id !== id);
   if (!existing && String(id).startsWith("seed-")) {
     state.calendarItems.push({ id, deleted: true });
+  }
+  if (!String(id).startsWith("seed-")) {
+    fetch(`${API_BASE}/api/calendar/${id}`, { method: "DELETE" }).catch(() => {});
   }
   state.openCalendarItemId = null;
   state.calendarComposerOpen = false;
