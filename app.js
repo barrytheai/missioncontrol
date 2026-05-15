@@ -223,6 +223,13 @@ const state = {
   openMemoryId: null,
   openCalendarItemId: null,
   previewPanel: null,
+  editTemplateIndex: null,
+  templates: [
+    { title: "Research Sprint", copy: "Gather sources, summarize findings, and create decision notes." },
+    { title: "Frontend Build", copy: "Assign Builder, track implementation, and request review." },
+    { title: "Release Prep", copy: "Coordinate checks, docs, changelog, and deployment readiness." },
+    { title: "Incident Review", copy: "Collect signals, identify cause, and capture prevention notes." }
+  ],
   projectView: "active",
   notificationsOpen: false,
   userInitials: localStorage.getItem("OPENCLAW_USER_INITIALS") || "CC"
@@ -853,12 +860,39 @@ function agentsMarkup() {
 }
 
 function templatesMarkup() {
-  return cardGridMarkup([
-    ["Research Sprint", "Gather sources, summarize findings, and create decision notes."],
-    ["Frontend Build", "Assign Builder, track implementation, and request review."],
-    ["Release Prep", "Coordinate checks, docs, changelog, and deployment readiness."],
-    ["Incident Review", "Collect signals, identify cause, and capture prevention notes."]
-  ]);
+  const items = state.templates;
+  return `
+    <div class="memory-grid">
+      ${items.map((tpl, i) => `
+        <article>
+          ${state.editTemplateIndex === i ? `
+            <input type="text" data-template-edit-title value="${escapeAttribute(tpl.title)}" style="width:100%;margin-bottom:6px;">
+            <textarea data-template-edit-copy rows="3" style="width:100%;">${escapeHtml(tpl.copy)}</textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button type="button" data-save-template="${i}">Save</button>
+              <button type="button" class="secondary-button" data-cancel-template-edit>Cancel</button>
+            </div>
+          ` : `
+            <h3>${escapeHtml(tpl.title)}</h3>
+            <p>${escapeHtml(tpl.copy)}</p>
+            <div style="display:flex;gap:8px;">
+              <button type="button" data-preview-card="${escapeAttribute(tpl.title)}" data-preview-copy="${escapeAttribute(tpl.copy)}">Preview</button>
+              <button type="button" class="secondary-button" data-edit-template="${i}">Edit</button>
+            </div>
+          `}
+        </article>
+      `).join("")}
+    </div>
+    ${state.previewPanel ? `
+      <section class="inline-detail-panel">
+        <div>
+          <h3>${state.previewPanel.title}</h3>
+          <p>${state.previewPanel.copy}</p>
+        </div>
+        <button class="close-button icon-close" type="button" data-close-preview>&times;</button>
+      </section>
+    ` : ""}
+  `;
 }
 
 function integrationsMarkup() {
@@ -1667,6 +1701,9 @@ document.addEventListener("click", (event) => {
   const bellButton = event.target.closest(".bell");
   const notificationJump = event.target.closest("[data-notification-jump]");
   const previewCard = event.target.closest("[data-preview-card]");
+  const editTemplate = event.target.closest("[data-edit-template]");
+  const saveTemplate = event.target.closest("[data-save-template]");
+  const cancelTemplateEdit = event.target.closest("[data-cancel-template-edit]");
   const activityDetailButton = event.target.closest("[data-activity-detail]");
   const calendarAdd = event.target.closest("[data-calendar-add]");
   const calendarSave = event.target.closest("[data-calendar-save]");
@@ -1828,6 +1865,30 @@ document.addEventListener("click", (event) => {
   if (notificationJump) {
     state.notificationsOpen = false;
     state.activeView = "tasks";
+    render();
+    return;
+  }
+
+  if (editTemplate) {
+    state.editTemplateIndex = parseInt(editTemplate.dataset.editTemplate, 10);
+    render();
+    return;
+  }
+
+  if (saveTemplate) {
+    const idx = parseInt(saveTemplate.dataset.saveTemplate, 10);
+    const titleEl = document.querySelector("[data-template-edit-title]");
+    const copyEl = document.querySelector("[data-template-edit-copy]");
+    if (titleEl && copyEl && state.templates[idx]) {
+      state.templates[idx] = { title: titleEl.value.trim(), copy: copyEl.value.trim() };
+    }
+    state.editTemplateIndex = null;
+    render();
+    return;
+  }
+
+  if (cancelTemplateEdit) {
+    state.editTemplateIndex = null;
     render();
     return;
   }
