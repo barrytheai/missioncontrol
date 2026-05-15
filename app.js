@@ -205,7 +205,7 @@ let events = [
 const state = {
   activeView: "tasks",
   tasks: loadTasks(),
-  selectedId: "m4",
+  selectedId: null,
   query: "",
   filter: "all",
   sort: "priority",
