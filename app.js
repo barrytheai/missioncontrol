@@ -652,9 +652,11 @@ function projectsMarkup() {
           <div class="project-edit-row">
             <label>Progress <input type="number" min="0" max="100" value="${project.progress}" data-project-field="${project.id}" data-field="progress" ${project.archivedAt ? "disabled" : ""}></label>
             ${project.archivedAt
-              ? `<span>Archived ${formatDateTime(project.archivedAt)}</span>`
+              ? `<span>Archived ${formatDateTime(project.archivedAt)}</span>
+                 <button class="danger-button compact" type="button" data-delete-project="${project.id}">Delete</button>`
               : `<button class="secondary-button" type="button" data-save-project="${project.id}">Save</button>
-                 <button class="danger-button compact" type="button" data-archive-project="${project.id}">Archive</button>`}
+                 <button class="secondary-button compact" type="button" data-archive-project="${project.id}">Archive</button>
+                 <button class="danger-button compact" type="button" data-delete-project="${project.id}">Delete</button>`}
           </div>
         </article>
       `).join("") || `<article class="project-card"><h3>No ${state.projectView} projects</h3><p>Nothing to show here yet.</p></article>`}
@@ -694,10 +696,6 @@ function archiveProject(id) {
   saveProjectFields(id);
   const project = projects.find((item) => item.id === id);
   if (!project) return;
-  if (!canArchiveProject(project)) {
-    showToast("Project must be 100% with all tasks complete");
-    return;
-  }
   project.archivedAt = new Date().toISOString();
   project.status = "Archived";
   state.editorDirty = false;
@@ -705,6 +703,15 @@ function archiveProject(id) {
   state.projectView = "archived";
   render();
   showToast("Project archived");
+}
+
+function deleteProject(id) {
+  const project = projects.find((item) => item.id === id);
+  projects = projects.filter((item) => item.id !== id);
+  state.editorDirty = false;
+  persistProjects();
+  render();
+  showToast(`${project?.title || "Project"} deleted`);
 }
 
 function projectTitle(id) {
@@ -1762,6 +1769,7 @@ document.addEventListener("click", (event) => {
   const projectView = event.target.closest("[data-project-view]");
   const saveProjectButton = event.target.closest("[data-save-project]");
   const archiveProjectButton = event.target.closest("[data-archive-project]");
+  const deleteProjectButton = event.target.closest("[data-delete-project]");
 
   if (nav) {
     state.activeView = nav.dataset.view;
@@ -1782,6 +1790,11 @@ document.addEventListener("click", (event) => {
 
   if (archiveProjectButton) {
     archiveProject(archiveProjectButton.dataset.archiveProject);
+    return;
+  }
+
+  if (deleteProjectButton) {
+    deleteProject(deleteProjectButton.dataset.deleteProject);
     return;
   }
 
