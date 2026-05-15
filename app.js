@@ -13,44 +13,44 @@ const lanes = [
 
 const defaultProjects = [
   {
-    id: "agent-org-infrastructure",
-    title: "Agent Org Infrastructure",
-    description: "Core infrastructure for agent registration, health monitoring, message routing, and shared state.",
+    id: "quotecore-plus",
+    title: "QuoteCore+",
+    description: "Roofing quoting, measuring, ordering and job management SaaS. Live at quote-core.com. Marketing site, blog, email capture, and outbound pipeline in progress.",
     status: "Active",
-    owner: "Builder",
+    owner: "Cece",
     priority: "High",
-    progress: 100,
-    tasks: "10/10"
+    progress: 65,
+    tasks: "Live"
+  },
+  {
+    id: "t3labs",
+    title: "T3Labs",
+    description: "Premium digital product studio website. Scaffolded and live. Needs proper build-out to be client-presentable.",
+    status: "Active",
+    owner: "Cece",
+    priority: "Medium",
+    progress: 20,
+    tasks: "In progress"
   },
   {
     id: "mission-control",
     title: "Mission Control",
-    description: "Central dashboard for tasks, projects, approvals, agent activity, calendar, and memory.",
+    description: "Central dashboard for tasks, projects, agent activity and team coordination. Live on Vercel with Supabase backend.",
     status: "Active",
     owner: "Cece",
     priority: "High",
-    progress: 70,
-    tasks: "7/10"
+    progress: 75,
+    tasks: "Live"
   },
   {
-    id: "skool-ai-extension",
-    title: "Skool AI Extension",
-    description: "Chrome extension and automation layer for course content, research, and assisted workflows.",
+    id: "quotecore-outbound",
+    title: "QuoteCore+ Cold Outbound",
+    description: "333 verified contacts from MillionVerifier. 3-email sequence reviewed. Waiting on app readiness and Stripe before launch.",
     status: "Planning",
-    owner: "Analyst",
-    priority: "Medium",
-    progress: 0,
-    tasks: "0/8"
-  },
-  {
-    id: "memory-layer",
-    title: "Memory Layer",
-    description: "Shared long-term memory, project facts, decisions, and reusable context for agents.",
-    status: "Planning",
-    owner: "Scribe",
-    priority: "Medium",
-    progress: 15,
-    tasks: "2/12"
+    owner: "Barry",
+    priority: "High",
+    progress: 40,
+    tasks: "Blocked"
   }
 ];
 
