@@ -534,6 +534,8 @@ kbd {
   border-radius: 8px;
   background: var(--panel);
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  min-width: 0;
 }
 
 .mission-card:active {
@@ -549,6 +551,8 @@ kbd {
   padding-right: 20px;
   font-size: 16px;
   line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .mission-card p {
