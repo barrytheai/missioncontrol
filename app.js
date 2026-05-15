@@ -860,10 +860,7 @@ function agentsMarkup() {
           ${agentAvatar(agent, index)}
           <span><strong>${agent.name}</strong><small>${agent.role || "Agent"} · ${agent.model || "Model not reported"}</small></span>
           <em class="${agentStatusClass(agent)}">${agentStatusLabel(agent)}</em>
-          <label class="upload-agent-image">
-            Upload image
-            <input type="file" accept="image/*" data-upload-agent="${agentKey(agent)}">
-          </label>
+
         </article>
       `).join("")}
     </div>
