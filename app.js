@@ -885,6 +885,7 @@ function templatesMarkup() {
             <div style="display:flex;gap:8px;">
               <button type="button" data-preview-card="${escapeAttribute(tpl.title)}" data-preview-copy="${escapeAttribute(tpl.copy)}">Preview</button>
               <button type="button" class="secondary-button" data-edit-template="${i}">Edit</button>
+              <button type="button" class="secondary-button" data-delete-template="${i}">Delete</button>
             </div>
           `}
         </article>
@@ -921,6 +922,7 @@ function integrationsMarkup() {
             <div style="display:flex;gap:8px;">
               <button type="button" data-preview-card="${escapeAttribute(item.title)}" data-preview-copy="${escapeAttribute(item.copy)}">Preview</button>
               <button type="button" class="secondary-button" data-edit-integration="${i}">Edit</button>
+              <button type="button" class="secondary-button" data-delete-integration="${i}">Delete</button>
             </div>
           `}
         </article>
@@ -1741,6 +1743,8 @@ document.addEventListener("click", (event) => {
   const editIntegration = event.target.closest("[data-edit-integration]");
   const saveIntegration = event.target.closest("[data-save-integration]");
   const cancelIntegrationEdit = event.target.closest("[data-cancel-integration-edit]");
+  const deleteTemplate = event.target.closest("[data-delete-template]");
+  const deleteIntegration = event.target.closest("[data-delete-integration]");
   const activityDetailButton = event.target.closest("[data-activity-detail]");
   const calendarAdd = event.target.closest("[data-calendar-add]");
   const calendarSave = event.target.closest("[data-calendar-save]");
@@ -1949,6 +1953,22 @@ document.addEventListener("click", (event) => {
   }
 
   if (cancelIntegrationEdit) {
+    state.editIntegrationIndex = null;
+    render();
+    return;
+  }
+
+  if (deleteTemplate) {
+    const idx = parseInt(deleteTemplate.dataset.deleteTemplate, 10);
+    state.templates.splice(idx, 1);
+    state.editTemplateIndex = null;
+    render();
+    return;
+  }
+
+  if (deleteIntegration) {
+    const idx = parseInt(deleteIntegration.dataset.deleteIntegration, 10);
+    state.integrations.splice(idx, 1);
     state.editIntegrationIndex = null;
     render();
     return;
