@@ -1242,11 +1242,15 @@ function escapeAttribute(value = "") {
 }
 
 function getTaskAgents(task) {
-  if (Array.isArray(task.agentIds)) {
-    return task.agentIds
+  const ids = Array.isArray(task.agentIds) ? task.agentIds
+    : Array.isArray(task.agent_ids) ? task.agent_ids
+    : null;
+  if (ids && ids.length > 0) {
+    return ids
       .map((id) => agents.find((agent) => agent.id === id || agent.name === id))
       .filter(Boolean);
   }
+  if (ids && ids.length === 0) return [];
   return missionAgents.map((agent, index) => ({
     id: agent.name.toLowerCase(),
     ...agent,
