@@ -1,0 +1,35 @@
+const { cors, supabaseFetch, isAuthorized, readBody } = require("./_lib");
+
+module.exports = async (req, res) => {
+  cors(res);
+  if (req.method === "OPTIONS") return res.status(204).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (!isAuthorized(req)) return res.status(401).json({ error: "Agent token required" });
+
+  const { id } = req.query;
+  const body = await readBody(req);
+  const agentId = String(body.agentId || "").trim();
+
+  const r = await supabaseFetch(`/tasks?id=eq.${id}&select=*`);
+  const tasks = await r.json();
+  if (!tasks || !tasks[0]) return res.status(404).json({ error: "Task not found" });
+
+  const task = tasks[0];
+  const agentIds = Array.isArray(task.agent_ids) ? task.agent_ids : [];
+  if (agentId && !agentIds.includes(agentId)) agentIds.push(agentId);
+
+  const activity = [`${agentId || "Agent"} claimed task`, ...(task.activity || [])].slice(0, 12);
+
+  const r2 = await supabaseFetch(`/tasks?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ lane: "execute", status: "Executing", agent_ids: agentIds, activity, updated_at: new Date().toISOString() })
+  });
+
+  await supabaseFetch("/events", { method: "POST", body: JSON.stringify({
+    level: "info", source: agentId || "Agent", message: `Claimed task: ${task.title}`, target: task.title,
+    created_at: new Date().toISOString()
+  })});
+
+  const result = await r2.json();
+  return res.status(200).json({ task: Array.isArray(result) ? result[0] : result });
+};
