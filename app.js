@@ -1,4 +1,5 @@
 const STORAGE_KEY = "openclaw-task-control-board-v3";
+const DOCS_KEY = "openclaw-docs-v1";
 const AGENT_IMAGE_KEY = "openclaw-agent-images-v1";
 const MEMORY_KEY = "openclaw-memories-v1";
 const CALENDAR_KEY = "openclaw-calendar-items-v1";
@@ -217,6 +218,9 @@ const state = {
   calendarWeekOffset: 0,
   calendarComposerOpen: false,
   memoryComposerOpen: false,
+  docs: loadDocs(),
+  docComposerOpen: false,
+  openDocId: null,
   openMemoryId: null,
   openCalendarItemId: null,
   previewPanel: null,
@@ -290,6 +294,52 @@ function loadMemories() {
 
 function persistMemories() {
   localStorage.setItem(MEMORY_KEY, JSON.stringify(state.memories));
+}
+
+function loadDocs() {
+  const defaults = [
+    {
+      id: "doc-1",
+      title: "Example Blog Draft",
+      type: "Blog",
+      author: "Barry",
+      status: "Draft",
+      body: "Agents can store blog drafts, reports, briefs, and notes here for Cece to review.",
+      updatedAt: new Date().toISOString()
+    }
+  ];
+  try {
+    return JSON.parse(localStorage.getItem(DOCS_KEY) || "null") || defaults;
+  } catch {
+    return defaults;
+  }
+}
+
+function persistDocs() {
+  localStorage.setItem(DOCS_KEY, JSON.stringify(state.docs));
+}
+
+async function loadDocsFromAPI() {
+  if (state.editorDirty) return;
+  try {
+    const response = await fetch(`${API_BASE}/api/docs`);
+    const data = await response.json();
+    if (Array.isArray(data.docs)) {
+      state.docs = data.docs.map((doc) => ({
+        id: doc.id,
+        title: doc.title || "Untitled doc",
+        type: doc.type || "Notes",
+        author: doc.author || doc.agent_id || "Agent",
+        status: doc.status || "Draft",
+        body: doc.body || "",
+        updatedAt: doc.updated_at || doc.updatedAt || new Date().toISOString()
+      }));
+      persistDocs();
+      if (state.activeView === "docs") render();
+    }
+  } catch {
+    // Local fallback stays active.
+  }
 }
 
 function loadCalendarItems() {
@@ -394,6 +444,7 @@ function renderActiveView() {
     projects: "Projects",
     calendar: "Calendar",
     memory: "Memory",
+    docs: "Docs",
     agents: "Agents",
     templates: "Templates",
     integrations: "Integrations",
@@ -512,6 +563,12 @@ function viewMarkup(view) {
       title: "Templates",
       copy: "Save repeatable task recipes for research, builds, reviews, releases, and incident response.",
       body: templatesMarkup()
+    },
+    docs: {
+      eyebrow: "Review library",
+      title: "Docs",
+      copy: "Review drafts, reports, blogs, briefs, research, and other outputs created by your agents.",
+      body: docsMarkup()
     },
     integrations: {
       eyebrow: "Connections",
@@ -1593,6 +1650,150 @@ function updateWorkspaceAgents(nextAgentIds) {
   patchTask(task.id, patch);
 }
 
+function docsMarkup() {
+  const openDoc = state.openDocId
+    ? state.docs.find((doc) => doc.id === state.openDocId)
+    : null;
+
+  return `
+    <div class="view-actions">
+      <button class="create-button compact" type="button" data-add-doc>Create Doc</button>
+    </div>
+
+    ${(state.docComposerOpen || openDoc) ? docComposerMarkup(openDoc) : ""}
+
+    <div class="docs-grid">
+      ${state.docs.map((doc) => `
+        <article class="doc-card">
+          <div class="doc-card-top">
+            <span class="doc-type">${escapeHtml(doc.type || "Notes")}</span>
+            <span class="doc-status">${escapeHtml(doc.status || "Draft")}</span>
+          </div>
+          <h3>${escapeHtml(doc.title)}</h3>
+          <p>${escapeHtml(doc.body).slice(0, 180)}${doc.body.length > 180 ? "..." : ""}</p>
+          <div class="doc-meta">
+            <span>${escapeHtml(doc.author || "Agent")}</span>
+            <span>${formatDateTime(doc.updatedAt)}</span>
+          </div>
+          <button type="button" data-open-doc="${doc.id}">Open Doc</button>
+        </article>
+      `).join("") || `<article class="doc-card"><h3>No docs yet</h3><p>Agent outputs will appear here.</p></article>`}
+    </div>
+  `;
+}
+
+function docComposerMarkup(doc) {
+  return `
+    <section class="inline-composer doc-composer">
+      <label>
+        Title
+        <input data-doc-title value="${escapeAttribute(doc?.title || "")}" placeholder="Blog draft, report, brief...">
+      </label>
+
+      <label>
+        Type
+        <select data-doc-type>
+          ${["Blog", "Report", "Brief", "Copy", "Research", "Notes"].map((type) => `
+            <option ${doc?.type === type ? "selected" : ""}>${type}</option>
+          `).join("")}
+        </select>
+      </label>
+
+      <label>
+        Status
+        <select data-doc-status>
+          ${["Draft", "Ready for Review", "Approved", "Archived"].map((status) => `
+            <option ${doc?.status === status ? "selected" : ""}>${status}</option>
+          `).join("")}
+        </select>
+      </label>
+
+      <label>
+        Author
+        <input data-doc-author value="${escapeAttribute(doc?.author || "Cece")}" placeholder="Cece, Barry, Robbie...">
+      </label>
+
+      <label class="wide">
+        Content
+        <textarea data-doc-body rows="12" placeholder="Paste or write the document here...">${escapeHtml(doc?.body || "")}</textarea>
+      </label>
+
+      <div class="composer-actions wide">
+        <button class="secondary-button" type="button" data-doc-cancel>Cancel</button>
+        ${doc ? `<button class="danger-button compact" type="button" data-doc-delete="${doc.id}">Delete Doc</button>` : ""}
+        ${doc ? `<button class="secondary-button compact" type="button" data-doc-archive="${doc.id}">Archive</button>` : ""}
+        <button class="create-button compact" type="button" data-doc-save>${doc ? "Save Changes" : "Save Doc"}</button>
+      </div>
+    </section>
+  `;
+}
+
+function addDocItem() {
+  state.docComposerOpen = true;
+  state.openDocId = null;
+  render();
+}
+
+function openDocItem(id) {
+  state.openDocId = id;
+  state.docComposerOpen = false;
+  render();
+}
+
+function saveDocItem() {
+  const title = document.querySelector("[data-doc-title]")?.value.trim();
+  const body = document.querySelector("[data-doc-body]")?.value.trim();
+
+  if (!title || !body) {
+    showToast("Add a title and content");
+    return;
+  }
+
+  const doc = {
+    id: state.openDocId || crypto.randomUUID(),
+    title,
+    type: document.querySelector("[data-doc-type]")?.value || "Notes",
+    status: document.querySelector("[data-doc-status]")?.value || "Draft",
+    author: document.querySelector("[data-doc-author]")?.value.trim() || "Cece",
+    body,
+    updatedAt: new Date().toISOString()
+  };
+
+  state.docs = state.docs.filter((item) => item.id !== doc.id);
+  state.docs.unshift(doc);
+
+  state.docComposerOpen = false;
+  state.openDocId = null;
+  state.editorDirty = false;
+  persistDocs();
+  render();
+  showToast("Doc saved");
+}
+
+function deleteDocItem(id) {
+  const doc = state.docs.find((item) => item.id === id);
+  state.docs = state.docs.filter((item) => item.id !== id);
+  state.openDocId = null;
+  state.docComposerOpen = false;
+  state.editorDirty = false;
+  persistDocs();
+  render();
+  showToast(`${doc?.title || "Doc"} deleted`);
+}
+
+function archiveDocItem(id) {
+  const doc = state.docs.find((item) => item.id === id);
+  if (!doc) return;
+  doc.status = "Archived";
+  doc.updatedAt = new Date().toISOString();
+  state.openDocId = null;
+  state.docComposerOpen = false;
+  state.editorDirty = false;
+  persistDocs();
+  render();
+  showToast("Doc archived");
+}
+
 function addCalendarItem() {
   state.calendarComposerOpen = true;
   render();
@@ -1808,6 +2009,12 @@ document.addEventListener("click", (event) => {
   const calendarOpen = event.target.closest("[data-calendar-open]");
   const calendarNext = event.target.closest("[data-calendar-next]");
   const calendarPrev = event.target.closest("[data-calendar-prev]");
+  const addDoc = event.target.closest("[data-add-doc]");
+  const openDoc = event.target.closest("[data-open-doc]");
+  const saveDoc = event.target.closest("[data-doc-save]");
+  const cancelDoc = event.target.closest("[data-doc-cancel]");
+  const deleteDoc = event.target.closest("[data-doc-delete]");
+  const archiveDoc = event.target.closest("[data-doc-archive]");
   const addMemory = event.target.closest("[data-add-memory]");
   const memorySave = event.target.closest("[data-memory-save]");
   const memoryCancel = event.target.closest("[data-memory-cancel]");
@@ -2089,6 +2296,39 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (addDoc) {
+    addDocItem();
+    return;
+  }
+
+  if (openDoc) {
+    openDocItem(openDoc.dataset.openDoc);
+    return;
+  }
+
+  if (saveDoc) {
+    saveDocItem();
+    return;
+  }
+
+  if (cancelDoc) {
+    state.docComposerOpen = false;
+    state.openDocId = null;
+    state.editorDirty = false;
+    render();
+    return;
+  }
+
+  if (deleteDoc) {
+    deleteDocItem(deleteDoc.dataset.docDelete);
+    return;
+  }
+
+  if (archiveDoc) {
+    archiveDocItem(archiveDoc.dataset.docArchive);
+    return;
+  }
+
   if (addMemory) {
     addMemoryItem();
     return;
@@ -2218,4 +2458,5 @@ missionForm.addEventListener("submit", (event) => {
 
 render();
 loadRemoteState();
+loadDocsFromAPI();
 setInterval(() => loadRemoteState(true), 5000);

@@ -14,6 +14,8 @@
     { "source": "/api/calendar/:id", "destination": "/api/calendar?id=:id" },
     { "source": "/api/memories", "destination": "/api/memories" },
     { "source": "/api/memories/:id", "destination": "/api/memories?id=:id" },
-    { "source": "/api/templates", "destination": "/api/templates" }
+    { "source": "/api/templates", "destination": "/api/templates" },
+    { "source": "/api/docs", "destination": "/api/docs" },
+    { "source": "/api/docs/:id", "destination": "/api/docs?id=:id" }
   ]
 }
