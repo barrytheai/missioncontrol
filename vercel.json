@@ -11,6 +11,9 @@
     { "source": "/api/agents/register", "destination": "/api/agents-register" },
     { "source": "/api/agents/heartbeat", "destination": "/api/agents-heartbeat" },
     { "source": "/api/calendar", "destination": "/api/calendar" },
-    { "source": "/api/calendar/:id", "destination": "/api/calendar?id=:id" }
+    { "source": "/api/calendar/:id", "destination": "/api/calendar?id=:id" },
+    { "source": "/api/memories", "destination": "/api/memories" },
+    { "source": "/api/memories/:id", "destination": "/api/memories?id=:id" },
+    { "source": "/api/templates", "destination": "/api/templates" }
   ]
 }
