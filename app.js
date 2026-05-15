@@ -224,11 +224,18 @@ const state = {
   openCalendarItemId: null,
   previewPanel: null,
   editTemplateIndex: null,
+  editIntegrationIndex: null,
   templates: [
     { title: "Research Sprint", copy: "Gather sources, summarize findings, and create decision notes." },
     { title: "Frontend Build", copy: "Assign Builder, track implementation, and request review." },
     { title: "Release Prep", copy: "Coordinate checks, docs, changelog, and deployment readiness." },
     { title: "Incident Review", copy: "Collect signals, identify cause, and capture prevention notes." }
+  ],
+  integrations: [
+    { title: "GitHub", copy: "Issues, pull requests, CI status, and code review loops." },
+    { title: "Linear", copy: "Sync tasks, priorities, owners, and status transitions." },
+    { title: "Calendar", copy: "Schedule runs, reviews, reminders, and availability windows." },
+    { title: "Memory Store", copy: "Persist project facts, task context, and agent notes." }
   ],
   projectView: "active",
   notificationsOpen: false,
@@ -896,12 +903,39 @@ function templatesMarkup() {
 }
 
 function integrationsMarkup() {
-  return cardGridMarkup([
-    ["GitHub", "Issues, pull requests, CI status, and code review loops."],
-    ["Linear", "Sync tasks, priorities, owners, and status transitions."],
-    ["Calendar", "Schedule runs, reviews, reminders, and availability windows."],
-    ["Memory Store", "Persist project facts, task context, and agent notes."]
-  ]);
+  const items = state.integrations;
+  return `
+    <div class="memory-grid">
+      ${items.map((item, i) => `
+        <article>
+          ${state.editIntegrationIndex === i ? `
+            <input type="text" data-integration-edit-title value="${escapeAttribute(item.title)}" style="width:100%;margin-bottom:6px;">
+            <textarea data-integration-edit-copy rows="3" style="width:100%;">${escapeHtml(item.copy)}</textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button type="button" data-save-integration="${i}">Save</button>
+              <button type="button" class="secondary-button" data-cancel-integration-edit>Cancel</button>
+            </div>
+          ` : `
+            <h3>${escapeHtml(item.title)}</h3>
+            <p>${escapeHtml(item.copy)}</p>
+            <div style="display:flex;gap:8px;">
+              <button type="button" data-preview-card="${escapeAttribute(item.title)}" data-preview-copy="${escapeAttribute(item.copy)}">Preview</button>
+              <button type="button" class="secondary-button" data-edit-integration="${i}">Edit</button>
+            </div>
+          `}
+        </article>
+      `).join("")}
+    </div>
+    ${state.previewPanel ? `
+      <section class="inline-detail-panel">
+        <div>
+          <h3>${state.previewPanel.title}</h3>
+          <p>${state.previewPanel.copy}</p>
+        </div>
+        <button class="close-button icon-close" type="button" data-close-preview>&times;</button>
+      </section>
+    ` : ""}
+  `;
 }
 
 function settingsMarkup() {
@@ -1704,6 +1738,9 @@ document.addEventListener("click", (event) => {
   const editTemplate = event.target.closest("[data-edit-template]");
   const saveTemplate = event.target.closest("[data-save-template]");
   const cancelTemplateEdit = event.target.closest("[data-cancel-template-edit]");
+  const editIntegration = event.target.closest("[data-edit-integration]");
+  const saveIntegration = event.target.closest("[data-save-integration]");
+  const cancelIntegrationEdit = event.target.closest("[data-cancel-integration-edit]");
   const activityDetailButton = event.target.closest("[data-activity-detail]");
   const calendarAdd = event.target.closest("[data-calendar-add]");
   const calendarSave = event.target.closest("[data-calendar-save]");
@@ -1889,6 +1926,30 @@ document.addEventListener("click", (event) => {
 
   if (cancelTemplateEdit) {
     state.editTemplateIndex = null;
+    render();
+    return;
+  }
+
+  if (editIntegration) {
+    state.editIntegrationIndex = parseInt(editIntegration.dataset.editIntegration, 10);
+    render();
+    return;
+  }
+
+  if (saveIntegration) {
+    const idx = parseInt(saveIntegration.dataset.saveIntegration, 10);
+    const titleEl = document.querySelector("[data-integration-edit-title]");
+    const copyEl = document.querySelector("[data-integration-edit-copy]");
+    if (titleEl && copyEl && state.integrations[idx]) {
+      state.integrations[idx] = { title: titleEl.value.trim(), copy: copyEl.value.trim() };
+    }
+    state.editIntegrationIndex = null;
+    render();
+    return;
+  }
+
+  if (cancelIntegrationEdit) {
+    state.editIntegrationIndex = null;
     render();
     return;
   }
