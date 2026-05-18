@@ -679,7 +679,7 @@ function taskWorkspaceMarkup() {
 }
 
 function approvalsMarkup() {
-  const approvalTasks = state.tasks.filter((task) => task.lane === "review" || task.priority === "High");
+  const approvalTasks = state.tasks.filter((task) => task.lane === "review");
   return `
     <div class="approval-list">
       ${approvalTasks.map((task) => `
