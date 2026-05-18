@@ -828,20 +828,12 @@ function weekDays(offset) {
 }
 
 function calendarItemsForDay(date) {
-  const seeded = [
-    { id: "seed-cal-1", date: weekDays(0)[0].date, time: "09:00", title: "Q2 Market Analysis", owner: "Scout, Analyst", notes: "Market trend review and competitor scan." },
-    { id: "seed-cal-2", date: weekDays(0)[1].date, time: "11:30", title: "Website Redesign", owner: "Designer, Builder", notes: "Design and frontend implementation check-in." },
-    { id: "seed-cal-3", date: weekDays(0)[2].date, time: "14:00", title: "Security Audit", owner: "Guardian", notes: "Security audit review and remediation planning." }
-  ];
   const liveItems = state.calendarItems.filter((item) => !item.deleted);
-  const overridden = new Set(state.calendarItems.map((item) => item.id));
-  return [...seeded.filter((item) => !overridden.has(item.id)), ...expandedRecurringItems(liveItems, date)]
-    .filter((item) => item.date === date);
+  return expandedRecurringItems(liveItems, date).filter((item) => item.date === date);
 }
 
 function allCalendarItems() {
-  const seeded = weekDays(0).flatMap((day) => calendarItemsForDay(day.date)).filter((item) => String(item.id).startsWith("seed-"));
-  return [...seeded, ...state.calendarItems.filter((item) => !item.deleted)];
+  return state.calendarItems.filter((item) => !item.deleted);
 }
 
 function expandedRecurringItems(items, date) {
