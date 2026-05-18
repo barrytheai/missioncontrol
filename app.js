@@ -2452,3 +2452,39 @@ render();
 loadRemoteState();
 loadDocsFromAPI();
 setInterval(() => loadRemoteState(true), 5000);
+
+// ── Mobile sidebar toggle ──
+const hamburgerBtn = document.getElementById("hamburgerBtn");
+const sidebarEl = document.querySelector(".sidebar");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+function openSidebar() {
+  sidebarEl.classList.add("sidebar-open");
+  sidebarOverlay.classList.add("active");
+}
+
+function closeSidebar() {
+  sidebarEl.classList.remove("sidebar-open");
+  sidebarOverlay.classList.remove("active");
+}
+
+if (hamburgerBtn) {
+  hamburgerBtn.addEventListener("click", () => {
+    if (sidebarEl.classList.contains("sidebar-open")) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
+  });
+}
+
+if (sidebarOverlay) {
+  sidebarOverlay.addEventListener("click", closeSidebar);
+}
+
+// Close sidebar when a nav item is tapped on mobile
+document.querySelectorAll(".nav-item").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (window.innerWidth <= 768) closeSidebar();
+  });
+});

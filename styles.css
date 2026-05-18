@@ -2046,3 +2046,125 @@ dialog::backdrop {
   min-height: 260px;
   font-family: inherit;
 }
+
+/* ── Hamburger: hidden on desktop ── */
+.hamburger-btn {
+  display: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1;
+  border: 0;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ── Sidebar overlay: hidden by default ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 99;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* ── Mobile breakpoint ── */
+@media (max-width: 768px) {
+  body {
+    min-width: 0;
+  }
+
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  /* Sidebar: off-screen by default, slides in as overlay */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.28s ease;
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Hamburger: visible on mobile */
+  .hamburger-btn {
+    display: grid;
+  }
+
+  /* Topbar: simpler mobile layout */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .topbar h1 {
+    font-size: 20px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Hide search bar on mobile to save space */
+  .topbar .search {
+    display: none;
+  }
+
+  /* Board area: no horizontal scroll — let the board itself scroll */
+  .board-area {
+    overflow-x: hidden;
+    padding: 16px 16px 0;
+  }
+
+  /* Mission board: horizontally scrollable */
+  .mission-board {
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    grid-template-columns: repeat(4, 280px);
+  }
+
+  /* Lanes: fixed min-width so they don't squash */
+  .lane {
+    min-width: 280px;
+  }
+
+  /* Event console: allow it to fit mobile width */
+  .event-console {
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  /* Content area: single column (hide detail panel) */
+  .content {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-panel {
+    display: none;
+  }
+
+  /* Main grid: remove fixed row heights */
+  .main {
+    grid-template-rows: 60px minmax(0, 1fr) 42px;
+  }
+}
