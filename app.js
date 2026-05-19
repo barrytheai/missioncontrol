@@ -355,6 +355,7 @@ function persistCalendarItems() {
 }
 
 async function loadCalendarFromAPI() {
+  if (state.editorDirty || state.calendarComposerOpen || state.openCalendarItemId) return;
   try {
     const r = await fetch(`${API_BASE}/api/calendar`);
     const d = await r.json();
@@ -369,7 +370,7 @@ async function loadCalendarFromAPI() {
         recurring: "none"
       }));
       localStorage.setItem(CALENDAR_KEY, JSON.stringify(state.calendarItems));
-      render();
+      if (state.activeView === "calendar") render();
     }
   } catch {}
 }
