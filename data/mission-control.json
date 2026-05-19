@@ -1,0 +1,365 @@
+{
+  "agents": [
+    {
+      "id": "scout",
+      "name": "Scout",
+      "role": "Research",
+      "status": "Connected",
+      "model": "OpenAI GPT-5.5",
+      "lastSeen": "2026-05-19T09:18:54.396Z",
+      "capabilities": [
+        "research",
+        "summarize"
+      ]
+    },
+    {
+      "id": "analyst",
+      "name": "Analyst",
+      "role": "Analysis",
+      "status": "Connected",
+      "model": "Claude Opus 4.6",
+      "lastSeen": "2026-05-19T09:18:54.407Z",
+      "capabilities": [
+        "analysis",
+        "reports"
+      ]
+    },
+    {
+      "id": "builder",
+      "name": "Builder",
+      "role": "Frontend",
+      "status": "Connected",
+      "model": "OpenAI GPT-5.5 Codex",
+      "lastSeen": "2026-05-19T09:18:54.407Z",
+      "capabilities": [
+        "code",
+        "ui"
+      ]
+    },
+    {
+      "id": "guardian",
+      "name": "Guardian",
+      "role": "Run Health",
+      "status": "Run Health",
+      "model": "OpenAI GPT-5.4",
+      "lastSeen": "2026-05-19T09:18:54.407Z",
+      "capabilities": [
+        "monitoring",
+        "security"
+      ]
+    },
+    {
+      "id": "operator",
+      "name": "Operator",
+      "role": "Ops",
+      "status": "Connected",
+      "model": "OpenAI GPT-5.5",
+      "lastSeen": "2026-05-19T09:18:54.407Z",
+      "capabilities": [
+        "deploy",
+        "routing"
+      ]
+    },
+    {
+      "id": "scribe",
+      "name": "Scribe",
+      "role": "Documentation",
+      "status": "Connected",
+      "model": "Claude Sonnet 4.5",
+      "lastSeen": "2026-05-19T09:18:54.407Z",
+      "capabilities": [
+        "docs",
+        "memory"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "m1",
+      "lane": "plan",
+      "title": "Q2 Market Analysis",
+      "description": "Analyze market trends and competitor positioning.",
+      "priority": "High",
+      "due": "2026-05-23",
+      "status": "Planning",
+      "progress": 30,
+      "agentIds": [
+        "scout",
+        "analyst"
+      ],
+      "createdAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m2",
+      "lane": "plan",
+      "title": "Customer Feedback Loop",
+      "description": "Aggregate and summarize customer feedback.",
+      "priority": "Medium",
+      "due": "2026-05-24",
+      "status": "Planning",
+      "progress": 18,
+      "agentIds": [
+        "scribe"
+      ],
+      "createdAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m3",
+      "lane": "plan",
+      "title": "Infra Cost Optimization",
+      "description": "Identify and reduce cloud spend.",
+      "priority": "Low",
+      "due": "2026-05-25",
+      "status": "Planning",
+      "progress": 12,
+      "agentIds": [
+        "operator"
+      ],
+      "createdAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m4",
+      "lane": "execute",
+      "title": "Website Redesign",
+      "description": "Redesign the marketing website and improve performance.",
+      "priority": "High",
+      "due": "2026-05-22",
+      "status": "Executing",
+      "progress": 65,
+      "agentIds": [
+        "builder",
+        "guardian"
+      ],
+      "createdAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m5",
+      "lane": "execute",
+      "title": "Data Pipeline Migration",
+      "description": "Migrate ETL pipeline to the new platform.",
+      "priority": "Medium",
+      "due": "2026-05-27",
+      "status": "Executing",
+      "progress": 48,
+      "agentIds": [
+        "operator",
+        "analyst"
+      ],
+      "createdAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m6",
+      "lane": "review",
+      "title": "Security Audit",
+      "description": "Conduct a full security audit and remediation plan.",
+      "priority": "High",
+      "due": "2026-05-26",
+      "status": "Review",
+      "progress": 80,
+      "agentIds": [
+        "guardian"
+      ],
+      "createdAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m7",
+      "lane": "done",
+      "title": "Onboarding Flow Update",
+      "description": "Improve onboarding flow and user activation.",
+      "priority": "Medium",
+      "due": "2026-05-28",
+      "status": "Done",
+      "progress": 100,
+      "agentIds": [
+        "scout",
+        "scribe"
+      ],
+      "createdAt": "2026-05-19T09:18:54.408Z",
+      "updatedAt": "2026-05-19T15:57:58.223Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m8",
+      "lane": "done",
+      "title": "API Docs Overhaul",
+      "description": "Restructure and modernize API documentation.",
+      "priority": "Medium",
+      "due": "2026-05-20",
+      "status": "Done",
+      "progress": 100,
+      "agentIds": [
+        "scribe",
+        "builder"
+      ],
+      "createdAt": "2026-05-19T09:18:54.408Z",
+      "updatedAt": "2026-05-19T09:18:54.408Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m9",
+      "lane": "done",
+      "title": "Release v1.4.0",
+      "description": "Shipped v1.4.0 to production successfully.",
+      "priority": "High",
+      "due": "2026-05-19",
+      "status": "Done",
+      "progress": 100,
+      "agentIds": [
+        "operator"
+      ],
+      "createdAt": "2026-05-19T09:18:54.408Z",
+      "updatedAt": "2026-05-19T09:18:54.408Z",
+      "activity": [
+        "Task created"
+      ]
+    },
+    {
+      "id": "m10",
+      "lane": "done",
+      "title": "Bug Bash Sprint",
+      "description": "Resolved critical bugs from latest release.",
+      "priority": "Low",
+      "due": "2026-05-18",
+      "status": "Done",
+      "progress": 100,
+      "agentIds": [
+        "guardian",
+        "builder"
+      ],
+      "createdAt": "2026-05-19T09:18:54.408Z",
+      "updatedAt": "2026-05-19T09:18:54.408Z",
+      "activity": [
+        "Task created"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "2518e1b0-c2c4-4444-b296-1839bce5dbc8",
+      "time": "2026-05-19T15:57:58.225Z",
+      "level": "info",
+      "source": "Task",
+      "message": "Onboarding Flow Update updated",
+      "target": "Done"
+    },
+    {
+      "id": "cdffcdbb-43c1-4246-b913-7e4dec7c78b9",
+      "time": "2026-05-19T09:18:54.410Z",
+      "level": "ok",
+      "source": "Task",
+      "message": "Website Redesign moved to In Progress",
+      "target": "Cece"
+    },
+    {
+      "id": "fbe8fe48-b7db-4fd7-94d9-39374fcfcfd9",
+      "time": "2026-05-19T09:18:54.410Z",
+      "level": "info",
+      "source": "Builder",
+      "message": "Started task: Update hero component",
+      "target": "Website Redesign"
+    },
+    {
+      "id": "a5d3db86-87db-478d-8595-1596003b7cbe",
+      "time": "2026-05-19T09:18:54.410Z",
+      "level": "ok",
+      "source": "Optimizer",
+      "message": "Run health check completed",
+      "target": "All systems normal"
+    },
+    {
+      "id": "ebefe5f6-1da0-414c-a767-b5c1b81d5097",
+      "time": "2026-05-19T09:18:54.410Z",
+      "level": "warn",
+      "source": "Guardian",
+      "message": "High memory usage detected",
+      "target": "82%"
+    },
+    {
+      "id": "37cff847-a43c-4a57-8b9d-e3f9b2333622",
+      "time": "2026-05-19T09:18:54.410Z",
+      "level": "info",
+      "source": "Analyst",
+      "message": "Data sync completed",
+      "target": "Q2 Market Analysis"
+    },
+    {
+      "id": "1bbb5008-b525-43d6-aa1c-1c787b87bb9d",
+      "time": "2026-05-19T09:18:54.410Z",
+      "level": "ok",
+      "source": "Scribe",
+      "message": "Documentation updated",
+      "target": "API Docs Overhaul"
+    }
+  ],
+  "memories": [
+    {
+      "id": "mem-1",
+      "title": "Project facts",
+      "body": "Brand voice is concise, operational, and Linear-inspired.",
+      "updatedAt": "2026-05-19T09:18:54.410Z"
+    },
+    {
+      "id": "mem-2",
+      "title": "Decisions",
+      "body": "Tasks replace missions in navigation and creation flows.",
+      "updatedAt": "2026-05-19T09:18:54.410Z"
+    },
+    {
+      "id": "mem-3",
+      "title": "Agent notes",
+      "body": "Builder owns UI implementation; Guardian owns run health.",
+      "updatedAt": "2026-05-19T09:18:54.410Z"
+    }
+  ],
+  "scraperItems": [
+    {
+      "id": "local-scrape-1",
+      "source": "reddit",
+      "platform": "r/Roofing",
+      "title": "Roofers frustrated by quoting delays",
+      "url": "https://www.reddit.com/r/Roofing/",
+      "score": "HIGH",
+      "pain": "Contractors are losing jobs because estimates take too long to prepare.",
+      "suggestion": "Use this as a QuoteCore+ content angle around quote speed.",
+      "quotes": [
+        "I spend nights catching up on estimates."
+      ],
+      "draftComments": [
+        "This is exactly the hidden cost of estimating. The job is often won or lost in the delay after the site visit."
+      ],
+      "tags": [
+        "quoting pain",
+        "comment ready"
+      ],
+      "capturedAt": "2026-05-19T09:18:54.410Z"
+    }
+  ]
+}
