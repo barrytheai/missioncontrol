@@ -4,6 +4,8 @@ const AGENT_IMAGE_KEY = "openclaw-agent-images-v1";
 const MEMORY_KEY = "openclaw-memories-v1";
 const CALENDAR_KEY = "openclaw-calendar-items-v1";
 const PROJECT_KEY = "openclaw-projects-v1";
+const TEMPLATES_KEY = "openclaw-templates-v1";
+const INTEGRATIONS_KEY = "openclaw-integrations-v1";
 
 const lanes = [
   { id: "plan", title: "Backlog" },
@@ -226,13 +228,13 @@ const state = {
   previewPanel: null,
   editTemplateIndex: null,
   editIntegrationIndex: null,
-  templates: [
+  templates: JSON.parse(localStorage.getItem(TEMPLATES_KEY) || "null") || [
     { title: "Research Sprint", copy: "Gather sources, summarize findings, and create decision notes." },
     { title: "Frontend Build", copy: "Assign Builder, track implementation, and request review." },
     { title: "Release Prep", copy: "Coordinate checks, docs, changelog, and deployment readiness." },
     { title: "Incident Review", copy: "Collect signals, identify cause, and capture prevention notes." }
   ],
-  integrations: [
+  integrations: JSON.parse(localStorage.getItem(INTEGRATIONS_KEY) || "null") || [
     { title: "GitHub", copy: "Issues, pull requests, CI status, and code review loops." },
     { title: "Linear", copy: "Sync tasks, priorities, owners, and status transitions." },
     { title: "Calendar", copy: "Schedule runs, reviews, reminders, and availability windows." },
@@ -407,6 +409,8 @@ async function api(path, options = {}) {
 
 async function loadRemoteState(silent = false) {
   if (state.editorDirty) return;
+  const active = document.activeElement;
+  if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT")) return;
   try {
     const remote = await api("/api/state");
     state.tasks = remote.tasks || state.tasks;
@@ -744,6 +748,17 @@ function projectsMarkup() {
                  <button class="secondary-button compact" type="button" data-archive-project="${project.id}">Archive</button>
                  <button class="danger-button compact" type="button" data-delete-project="${project.id}">Delete</button>`}
           </div>
+          ${(() => {
+            const projectTasks = state.tasks.filter(t => t.project_id === project.id || t.projectId === project.id);
+            if (!projectTasks.length) return '';
+            const done = projectTasks.filter(t => t.lane === 'done');
+            const active = projectTasks.filter(t => t.lane !== 'done');
+            return `<div class="project-tasks-list">
+              <p class="project-tasks-label">Tasks (${done.length}/${projectTasks.length} done)</p>
+              ${active.map(t => `<div class="project-task-item">${escapeHtml(t.title)}</div>`).join('')}
+              ${done.map(t => `<div class="project-task-item done">${escapeHtml(t.title)}</div>`).join('')}
+            </div>`;
+          })()}
         </article>
       `).join("") || `<article class="project-card"><h3>No ${state.projectView} projects</h3><p>Nothing to show here yet.</p></article>`}
     </div>
@@ -2184,6 +2199,7 @@ document.addEventListener("click", (event) => {
     if (titleEl && copyEl && state.templates[idx]) {
       state.templates[idx] = { title: titleEl.value.trim(), copy: copyEl.value.trim() };
     }
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(state.templates));
     state.editTemplateIndex = null;
     render();
     return;
@@ -2208,6 +2224,7 @@ document.addEventListener("click", (event) => {
     if (titleEl && copyEl && state.integrations[idx]) {
       state.integrations[idx] = { title: titleEl.value.trim(), copy: copyEl.value.trim() };
     }
+    localStorage.setItem(INTEGRATIONS_KEY, JSON.stringify(state.integrations));
     state.editIntegrationIndex = null;
     render();
     return;
@@ -2222,6 +2239,7 @@ document.addEventListener("click", (event) => {
   if (deleteTemplate) {
     const idx = parseInt(deleteTemplate.dataset.deleteTemplate, 10);
     state.templates.splice(idx, 1);
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(state.templates));
     state.editTemplateIndex = null;
     render();
     return;
@@ -2230,6 +2248,7 @@ document.addEventListener("click", (event) => {
   if (deleteIntegration) {
     const idx = parseInt(deleteIntegration.dataset.deleteIntegration, 10);
     state.integrations.splice(idx, 1);
+    localStorage.setItem(INTEGRATIONS_KEY, JSON.stringify(state.integrations));
     state.editIntegrationIndex = null;
     render();
     return;

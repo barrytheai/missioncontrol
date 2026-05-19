@@ -2168,3 +2168,30 @@ dialog::backdrop {
     grid-template-rows: 60px minmax(0, 1fr) 42px;
   }
 }
+
+.project-tasks-list {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.project-tasks-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.project-task-item {
+  font-size: 13px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+}
+
+.project-task-item.done {
+  color: var(--muted);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
