@@ -2200,15 +2200,10 @@ function docsMarkup() {
     ? state.docs.find((doc) => doc.id === state.openDocId)
     : null;
 
-  return `
-    <div class="view-actions">
-      <button class="create-button compact" type="button" data-add-doc>Create Doc</button>
-    </div>
+  const showGrid = !openDoc && !state.docComposerOpen;
 
-    ${state.docComposerOpen ? docComposerMarkup(null) : ""}
-    ${openDoc && !state.docComposerOpen ? docReaderMarkup(openDoc) : ""}
-
-    ${!openDoc && !state.docComposerOpen ? `<div class="docs-grid">` : ""}
+  const gridHtml = showGrid ? `
+    <div class="docs-grid">
       ${state.docs.map((doc) => `
         <article class="doc-card">
           <div class="doc-card-top">
@@ -2224,7 +2219,16 @@ function docsMarkup() {
           <button type="button" data-open-doc="${doc.id}">Open Doc</button>
         </article>
       `).join("") || `<article class="doc-card"><h3>No docs yet</h3><p>Agent outputs will appear here.</p></article>`}
-    </div>` : ""}
+    </div>
+  ` : "";
+
+  return `
+    <div class="view-actions">
+      <button class="create-button compact" type="button" data-add-doc>Create Doc</button>
+    </div>
+    ${state.docComposerOpen ? docComposerMarkup(openDoc) : ""}
+    ${openDoc && !state.docComposerOpen ? docReaderMarkup(openDoc) : ""}
+    ${gridHtml}
   `;
 }
 
