@@ -1453,6 +1453,8 @@ kbd {
 .memory-grid p,
 .preview-table small {
   color: var(--muted);
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .empty-day {
@@ -1552,6 +1554,8 @@ kbd {
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .memory-grid button {
