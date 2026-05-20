@@ -517,7 +517,9 @@ async function loadScraperFromAPI() {
 }
 
 async function loadDocsFromAPI() {
-  if (state.editorDirty) return;
+  if (state.editorDirty || state.docComposerOpen || state.openDocId) return;
+  const active = document.activeElement;
+  if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
   try {
     const response = await fetch(`${API_BASE}/api/docs`);
     const data = await response.json();
@@ -2424,8 +2426,9 @@ function saveMemoryItem() {
     showToast("Add a title and memory");
     return;
   }
-  if (state.openMemoryId) {
-    const memory = state.memories.find((item) => item.id === state.openMemoryId);
+  const editingId = state.openMemoryId;
+  if (editingId) {
+    const memory = state.memories.find((item) => item.id === editingId);
     if (memory) {
       memory.title = title;
       memory.body = body;
@@ -2438,8 +2441,8 @@ function saveMemoryItem() {
   state.editorDirty = false;
   persistMemories();
   // Sync to API
-  if (state.openMemoryId) {
-    fetch(`${API_BASE}/api/memories/${state.memories.find(m => m.title === title)?.id || ""}`, {
+  if (editingId) {
+    fetch(`${API_BASE}/api/memories/${editingId}`, {
       method: "PATCH", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
       body: JSON.stringify({ title, body })
     }).catch(() => {});
