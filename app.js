@@ -2205,9 +2205,10 @@ function docsMarkup() {
       <button class="create-button compact" type="button" data-add-doc>Create Doc</button>
     </div>
 
-    ${(state.docComposerOpen || openDoc) ? docComposerMarkup(openDoc) : ""}
+    ${state.docComposerOpen ? docComposerMarkup(null) : ""}
+    ${openDoc && !state.docComposerOpen ? docReaderMarkup(openDoc) : ""}
 
-    <div class="docs-grid">
+    ${!openDoc && !state.docComposerOpen ? `<div class="docs-grid">` : ""}
       ${state.docs.map((doc) => `
         <article class="doc-card">
           <div class="doc-card-top">
@@ -2223,7 +2224,27 @@ function docsMarkup() {
           <button type="button" data-open-doc="${doc.id}">Open Doc</button>
         </article>
       `).join("") || `<article class="doc-card"><h3>No docs yet</h3><p>Agent outputs will appear here.</p></article>`}
-    </div>
+    </div>` : ""}
+  `;
+}
+
+function docReaderMarkup(doc) {
+  return `
+    <section class="doc-reader">
+      <div class="doc-reader-header">
+        <div>
+          <span class="doc-type">${escapeHtml(doc.type || "Notes")}</span>
+          <span class="doc-status">${escapeHtml(doc.status || "Draft")}</span>
+          <span class="doc-author">${escapeHtml(doc.author || "Agent")}</span>
+        </div>
+        <div class="doc-reader-actions">
+          <button class="secondary-button compact" type="button" data-edit-doc="${doc.id}">Edit</button>
+          <button class="secondary-button compact" type="button" data-doc-cancel>Close</button>
+        </div>
+      </div>
+      <h2 class="doc-reader-title">${escapeHtml(doc.title)}</h2>
+      <div class="doc-reader-body">${escapeHtml(doc.body).replace(/\n/g, "<br>")}</div>
+    </section>
   `;
 }
 
@@ -2576,6 +2597,7 @@ document.addEventListener("click", (event) => {
   const calendarPrev = event.target.closest("[data-calendar-prev]");
   const addDoc = event.target.closest("[data-add-doc]");
   const openDoc = event.target.closest("[data-open-doc]");
+  const editDoc = event.target.closest("[data-edit-doc]");
   const saveDoc = event.target.closest("[data-doc-save]");
   const cancelDoc = event.target.closest("[data-doc-cancel]");
   const deleteDoc = event.target.closest("[data-doc-delete]");
@@ -2902,6 +2924,18 @@ document.addEventListener("click", (event) => {
 
   if (openDoc) {
     openDocItem(openDoc.dataset.openDoc);
+    return;
+  }
+
+  if (editDoc) {
+    state.openDocId = editDoc.dataset.editDoc;
+    state.docComposerOpen = false;
+    // Switch to edit mode - open the composer with the doc
+    const doc = state.docs.find(d => d.id === editDoc.dataset.editDoc);
+    if (doc) {
+      state.docComposerOpen = true;
+    }
+    render();
     return;
   }
 
