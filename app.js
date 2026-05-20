@@ -2204,7 +2204,7 @@ function docsMarkup() {
 
   const gridHtml = showGrid ? `
     <div class="docs-grid">
-      ${state.docs.map((doc) => `
+      ${state.docs.filter(doc => doc.status !== "Archived").map((doc) => `
         <article class="doc-card">
           <div class="doc-card-top">
             <span class="doc-type">${escapeHtml(doc.type || "Notes")}</span>
@@ -2347,6 +2347,10 @@ function deleteDocItem(id) {
   state.docComposerOpen = false;
   state.editorDirty = false;
   persistDocs();
+  fetch(`${API_BASE}/api/docs/${id}`, {
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` }
+  }).catch(() => {});
   render();
   showToast(`${doc?.title || "Doc"} deleted`);
 }
@@ -2360,6 +2364,11 @@ function archiveDocItem(id) {
   state.docComposerOpen = false;
   state.editorDirty = false;
   persistDocs();
+  fetch(`${API_BASE}/api/docs/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
+    body: JSON.stringify({ status: "Archived" })
+  }).catch(() => {});
   render();
   showToast("Doc archived");
 }
