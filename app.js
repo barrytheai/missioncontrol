@@ -429,6 +429,21 @@ function persistMemories() {
   localStorage.setItem(MEMORY_KEY, JSON.stringify(state.memories));
 }
 
+async function loadMemoriesFromAPI() {
+  if (state.editorDirty || state.memoryComposerOpen || state.openMemoryId) return;
+  const active = document.activeElement;
+  if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+  try {
+    const r = await fetch(`${API_BASE}/api/memories`);
+    const d = await r.json();
+    if (Array.isArray(d.memories) && d.memories.length > 0) {
+      state.memories = d.memories.map(m => ({ id: m.id, title: m.title || "Untitled", body: m.body || "" }));
+      persistMemories();
+      if (state.activeView === "memory") render();
+    }
+  } catch {}
+}
+
 function loadDocs() {
   const defaults = [
     {
@@ -2422,6 +2437,19 @@ function saveMemoryItem() {
   state.openMemoryId = null;
   state.editorDirty = false;
   persistMemories();
+  // Sync to API
+  if (state.openMemoryId) {
+    fetch(`${API_BASE}/api/memories/${state.memories.find(m => m.title === title)?.id || ""}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
+      body: JSON.stringify({ title, body })
+    }).catch(() => {});
+  } else {
+    const newMem = state.memories[0];
+    fetch(`${API_BASE}/api/memories`, {
+      method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
+      body: JSON.stringify({ title, body })
+    }).then(r => r.json()).then(d => { if (d.memory?.id) { newMem.id = d.memory.id; persistMemories(); } }).catch(() => {});
+  }
   render();
   showToast("Memory saved");
 }
@@ -2440,6 +2468,10 @@ function deleteMemoryItem(id) {
   state.memoryComposerOpen = false;
   state.editorDirty = false;
   persistMemories();
+  // Sync to API
+  fetch(`${API_BASE}/api/memories/${id}`, {
+    method: "DELETE", headers: { "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` }
+  }).catch(() => {});
   render();
   showToast("Memory deleted");
 }
@@ -3037,10 +3069,14 @@ render();
 loadRemoteState();
 loadDocsFromAPI();
 loadScraperFromAPI();
+loadMemoriesFromAPI();
+loadCalendarFromAPI();
 setInterval(() => {
   loadRemoteState(true);
   loadDocsFromAPI();
   loadScraperFromAPI();
+  loadMemoriesFromAPI();
+  loadCalendarFromAPI();
 }, 5000);
 
 // ── Mobile sidebar toggle ──
