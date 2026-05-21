@@ -2846,6 +2846,10 @@ document.addEventListener("click", (event) => {
   if (nav) {
     state.activeView = nav.dataset.view;
     render();
+    if (nav.dataset.view === "scraper") loadScraperFromAPI();
+    if (nav.dataset.view === "memory") loadMemoriesFromAPI();
+    if (nav.dataset.view === "docs") loadDocsFromAPI();
+    if (nav.dataset.view === "calendar") loadCalendarFromAPI();
     return;
   }
 
