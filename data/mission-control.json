@@ -75,6 +75,42 @@
   ],
   "tasks": [
     {
+      "id": "51cf0e53-d585-4c92-b099-a450b15bcb34",
+      "lane": "done",
+      "title": "test",
+      "description": "test",
+      "projectId": "",
+      "priority": "High",
+      "due": "2026-05-30",
+      "status": "Done",
+      "progress": 5,
+      "agentIds": [],
+      "activity": [
+        "Task created"
+      ],
+      "createdAt": "2026-05-21T09:04:50.251Z",
+      "updatedAt": "2026-05-21T09:05:16.804Z"
+    },
+    {
+      "id": "30b755de-2b48-4580-ba9a-f97c25787a6f",
+      "lane": "done",
+      "title": "test",
+      "description": "test",
+      "projectId": "",
+      "priority": "High",
+      "due": "2026-05-30",
+      "status": "Done",
+      "progress": 5,
+      "agentIds": [
+        "operator"
+      ],
+      "activity": [
+        "Task created"
+      ],
+      "createdAt": "2026-05-21T09:04:22.345Z",
+      "updatedAt": "2026-05-21T09:05:34.736Z"
+    },
+    {
       "id": "m1",
       "lane": "plan",
       "title": "Q2 Market Analysis",
@@ -106,10 +142,17 @@
         "scribe"
       ],
       "createdAt": "2026-05-19T09:18:54.407Z",
-      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-21T07:13:20.843Z",
       "activity": [
+        {
+          "label": "Cece changed the project",
+          "actor": "Cece",
+          "at": "2026-05-21T07:13:20.532Z",
+          "detail": "Project changed from \"No project\" to \"QuoteCore+\"."
+        },
         "Task created"
-      ]
+      ],
+      "projectId": "quotecore-plus"
     },
     {
       "id": "m3",
@@ -131,19 +174,19 @@
     },
     {
       "id": "m4",
-      "lane": "execute",
+      "lane": "done",
       "title": "Website Redesign",
       "description": "Redesign the marketing website and improve performance.",
       "priority": "High",
       "due": "2026-05-22",
-      "status": "Executing",
+      "status": "Done",
       "progress": 65,
       "agentIds": [
         "builder",
         "guardian"
       ],
       "createdAt": "2026-05-19T09:18:54.407Z",
-      "updatedAt": "2026-05-19T09:18:54.407Z",
+      "updatedAt": "2026-05-21T13:11:50.089Z",
       "activity": [
         "Task created"
       ]
@@ -263,6 +306,110 @@
   ],
   "events": [
     {
+      "id": "beb641c9-b2d3-460b-8de4-b4463b5276a8",
+      "time": "2026-05-21T13:11:50.089Z",
+      "level": "info",
+      "source": "Task",
+      "message": "Website Redesign updated",
+      "target": "Done"
+    },
+    {
+      "id": "e44b66f2-4fa8-4161-883d-8c2ca3555a10",
+      "time": "2026-05-21T13:11:40.658Z",
+      "level": "warn",
+      "source": "Task",
+      "message": "test deleted",
+      "target": "Cece"
+    },
+    {
+      "id": "5182c3d5-bf8e-4429-99a2-36f307534109",
+      "time": "2026-05-21T09:05:34.736Z",
+      "level": "info",
+      "source": "Task",
+      "message": "test updated",
+      "target": "Done"
+    },
+    {
+      "id": "8f28dfc8-2a7c-41c4-80da-86621db2ffb2",
+      "time": "2026-05-21T09:05:16.804Z",
+      "level": "info",
+      "source": "Task",
+      "message": "test updated",
+      "target": "Done"
+    },
+    {
+      "id": "82be86af-4c24-493e-b023-1b7fdada00b8",
+      "time": "2026-05-21T09:04:50.251Z",
+      "level": "ok",
+      "source": "Task",
+      "message": "test created",
+      "target": "Mission Control"
+    },
+    {
+      "id": "068f7919-8f14-41c3-8be0-2cb5d0e1927c",
+      "time": "2026-05-21T09:04:37.981Z",
+      "level": "ok",
+      "source": "Task",
+      "message": "test created",
+      "target": "Mission Control"
+    },
+    {
+      "id": "982bb768-98b3-479d-a340-99102d11d05e",
+      "time": "2026-05-21T09:04:22.345Z",
+      "level": "ok",
+      "source": "Task",
+      "message": "test created",
+      "target": "Mission Control"
+    },
+    {
+      "id": "49454b71-9326-4a38-b849-ac464765de90",
+      "time": "2026-05-21T07:13:20.843Z",
+      "level": "info",
+      "source": "Task",
+      "message": "Customer Feedback Loop updated",
+      "target": "Planning"
+    },
+    {
+      "id": "7f2a6c4a-a2eb-4538-9b7a-958f4e6ec9aa",
+      "time": "2026-05-20T09:48:02.943Z",
+      "level": "warn",
+      "source": "Task",
+      "message": "QA Project Assigned Task deleted",
+      "target": "Cece"
+    },
+    {
+      "id": "1fb1d349-bbd0-444e-8924-3c0cf45bd9e9",
+      "time": "2026-05-20T09:48:00.701Z",
+      "level": "ok",
+      "source": "Task",
+      "message": "QA Project Assigned Task created",
+      "target": "Mission Control"
+    },
+    {
+      "id": "f1ea19ef-e114-47d3-af06-613bba705542",
+      "time": "2026-05-20T09:37:06.238Z",
+      "level": "warn",
+      "source": "Task",
+      "message": "QA Human Test Task deleted",
+      "target": "Cece"
+    },
+    {
+      "id": "71892c9c-8764-42aa-80f4-f4ddb79c4439",
+      "time": "2026-05-20T09:36:07.399Z",
+      "level": "info",
+      "source": "Task",
+      "message": "QA Human Test Task updated",
+      "target": "Done"
+    },
+    {
+      "id": "f5045659-c49c-4c5c-a10d-2c901295d1d8",
+      "time": "2026-05-20T09:22:47.568Z",
+      "level": "ok",
+      "source": "Task",
+      "message": "QA Human Test Task created",
+      "target": "Mission Control"
+    },
+    {
       "id": "2518e1b0-c2c4-4444-b296-1839bce5dbc8",
       "time": "2026-05-19T15:57:58.225Z",
       "level": "info",
@@ -340,6 +487,334 @@
     }
   ],
   "scraperItems": [
+    {
+      "id": "test-reddit-1",
+      "source": "reddit",
+      "platform": "r/Roofing",
+      "title": "Quote follow-up delays",
+      "url": "https://www.reddit.com/r/Roofing/",
+      "score": "HIGH",
+      "pain": "Roofers are waiting too long between survey and quote, which creates lost-job risk.",
+      "suggestion": "Draft an outreach angle around same-day quoting and margin protection.",
+      "quotes": [
+        "Customers chase twice then disappear."
+      ],
+      "draftComments": [
+        "This seems like the exact moment where a faster quoting workflow pays for itself."
+      ],
+      "tags": [
+        "quoting",
+        "follow-up"
+      ],
+      "capturedAt": "2026-05-21T10:22:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-reddit-2",
+      "source": "reddit",
+      "platform": "r/ContractorUK",
+      "title": "Lead quality complaints",
+      "url": "https://www.reddit.com/r/ContractorUK/",
+      "score": "MED",
+      "pain": "Contractors feel paid lead sources waste time because enquiries arrive without enough context.",
+      "suggestion": "Use as a lead qualification content angle.",
+      "quotes": [
+        "The lead is useless without job details."
+      ],
+      "draftComments": [
+        "Do you find the issue is lead volume, or missing context before the first call?"
+      ],
+      "tags": [
+        "lead gen",
+        "qualification"
+      ],
+      "capturedAt": "2026-05-21T10:09:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-reddit-3",
+      "source": "reddit",
+      "platform": "r/smallbusiness",
+      "title": "Software adoption friction",
+      "url": "https://www.reddit.com/r/smallbusiness/",
+      "score": "LOW",
+      "pain": "Small business owners worry new software adds admin before it saves time.",
+      "suggestion": "Position QuoteCore+ around replacing existing spreadsheet friction.",
+      "quotes": [
+        "I do not need another dashboard."
+      ],
+      "draftComments": [
+        "The best tools usually win when they replace a painful habit, not add a new one."
+      ],
+      "tags": [
+        "software adoption"
+      ],
+      "capturedAt": "2026-05-21T09:55:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-news-1",
+      "source": "news",
+      "platform": "Roofing Today",
+      "title": "Material costs pressure quoting",
+      "url": "https://roofingtoday.co.uk/",
+      "score": "HIGH",
+      "pain": "Cost movement is making accurate quotes harder to maintain across jobs.",
+      "suggestion": "Turn into a blog angle on protecting margin while quoting faster.",
+      "quotes": [
+        "Margins are being squeezed by unpredictable costs."
+      ],
+      "draftComments": [
+        "Cost volatility makes quote speed and quote accuracy part of the same problem."
+      ],
+      "tags": [
+        "cost pressure",
+        "industry trend"
+      ],
+      "capturedAt": "2026-05-21T09:42:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-news-2",
+      "source": "news",
+      "platform": "NFRC",
+      "title": "Training and quality award signal",
+      "url": "https://www.nfrc.co.uk/",
+      "score": "MED",
+      "pain": "Award and training stories create positive engagement opportunities with roofing firms.",
+      "suggestion": "Draft congratulatory social comments for winners and finalists.",
+      "quotes": [
+        "Quality workmanship deserves recognition."
+      ],
+      "draftComments": [
+        "Great to see roofing firms recognised for quality work and training investment."
+      ],
+      "tags": [
+        "awards",
+        "engagement"
+      ],
+      "capturedAt": "2026-05-21T09:27:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-news-3",
+      "source": "news",
+      "platform": "FMB",
+      "title": "Small builder confidence dips",
+      "url": "https://www.fmb.org.uk/",
+      "score": "MED",
+      "pain": "Trade confidence signals are pointing to tighter cashflow and cautious buying.",
+      "suggestion": "Create a content angle on reducing admin drag during slow periods.",
+      "quotes": [
+        "Small firms are watching cashflow closely."
+      ],
+      "draftComments": [
+        "When confidence dips, anything that shortens admin time becomes more valuable."
+      ],
+      "tags": [
+        "cashflow",
+        "market signal"
+      ],
+      "capturedAt": "2026-05-21T09:14:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-producthunt-1",
+      "source": "producthunt",
+      "platform": "ProductHunt",
+      "title": "AI admin tool launch",
+      "url": "https://www.producthunt.com/",
+      "score": "MED",
+      "pain": "A new AI admin assistant targets broad small business workflows, not trade-specific quoting.",
+      "suggestion": "Comment with a question about niche vertical workflows.",
+      "quotes": [
+        "Automate repetitive admin for founders."
+      ],
+      "draftComments": [
+        "Nice launch. Are users coming for broad admin help, or one painful workflow first?"
+      ],
+      "tags": [
+        "competitive landscape"
+      ],
+      "capturedAt": "2026-05-21T08:59:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-producthunt-2",
+      "source": "producthunt",
+      "platform": "ProductHunt",
+      "title": "CRM for service teams",
+      "url": "https://www.producthunt.com/",
+      "score": "LOW",
+      "pain": "The product focuses on CRM pipeline tracking but not estimate generation.",
+      "suggestion": "Capture competitor positioning for future comparison content.",
+      "quotes": [
+        "Track every customer touchpoint."
+      ],
+      "draftComments": [
+        "Interesting positioning. Do service teams ask for quoting inside the CRM too?"
+      ],
+      "tags": [
+        "CRM",
+        "comment target"
+      ],
+      "capturedAt": "2026-05-21T08:47:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-producthunt-3",
+      "source": "producthunt",
+      "platform": "ProductHunt",
+      "title": "No-code quoting builder",
+      "url": "https://www.producthunt.com/",
+      "score": "HIGH",
+      "pain": "A generic quoting builder is getting attention but lacks roofing-specific workflow depth.",
+      "suggestion": "Use for competitive research and differentiation notes.",
+      "quotes": [
+        "Create quotes without code."
+      ],
+      "draftComments": [
+        "The niche workflow details are usually where quoting tools get hard. Curious how you handle trade-specific pricing?"
+      ],
+      "tags": [
+        "quoting tools",
+        "competitor"
+      ],
+      "capturedAt": "2026-05-21T08:32:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-web-1",
+      "source": "web",
+      "platform": "Web Search",
+      "title": "Roofing estimate software query",
+      "url": "https://www.google.com/search?q=roofing+estimate+software",
+      "score": "HIGH",
+      "pain": "Search results show high intent around faster roofing estimates and quote templates.",
+      "suggestion": "Create SEO page angle for construction quoting software.",
+      "quotes": [
+        "roofing estimate software"
+      ],
+      "draftComments": [
+        "This query has strong commercial intent and maps directly to QuoteCore+."
+      ],
+      "tags": [
+        "SEO",
+        "high intent"
+      ],
+      "capturedAt": "2026-05-21T08:17:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-web-2",
+      "source": "web",
+      "platform": "Web Search",
+      "title": "Contractor lead generation query",
+      "url": "https://www.google.com/search?q=contractor+lead+generation+complaints",
+      "score": "MED",
+      "pain": "Broader searches reveal complaints about low-quality contractor lead platforms.",
+      "suggestion": "Use as comparison content against owned enquiry capture.",
+      "quotes": [
+        "contractor lead generation complaints"
+      ],
+      "draftComments": [
+        "Strong angle: fewer but better-qualified enquiries."
+      ],
+      "tags": [
+        "lead gen",
+        "search"
+      ],
+      "capturedAt": "2026-05-21T08:02:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-web-3",
+      "source": "web",
+      "platform": "Web Search",
+      "title": "Manual X search pack",
+      "url": "https://x.com/search",
+      "score": "LOW",
+      "pain": "X still needs manual search because auth blocks automated scraping.",
+      "suggestion": "Run suggested searches manually and paste useful links back to the agent.",
+      "quotes": [
+        "roofing quote software",
+        "estimate takes too long"
+      ],
+      "draftComments": [
+        "Suggested manual search list is ready for Cece."
+      ],
+      "tags": [
+        "manual follow-up"
+      ],
+      "capturedAt": "2026-05-21T07:47:06.819Z",
+      "done": false
+    },
+    {
+      "id": "test-done-1",
+      "source": "reddit",
+      "platform": "r/Roofing",
+      "title": "Reviewed quoting complaint",
+      "url": "https://www.reddit.com/r/Roofing/",
+      "score": "HIGH",
+      "pain": "Completed review of a quoting-delay complaint and saved the content angle.",
+      "suggestion": "No action needed; kept for history.",
+      "quotes": [
+        "Reviewed and marked done."
+      ],
+      "draftComments": [
+        "Archive note: useful for quote-speed positioning."
+      ],
+      "tags": [
+        "done",
+        "history"
+      ],
+      "capturedAt": "2026-05-21T07:32:06.819Z",
+      "done": true
+    },
+    {
+      "id": "test-done-2",
+      "source": "news",
+      "platform": "Roofing Today",
+      "title": "Reviewed cost pressure article",
+      "url": "https://roofingtoday.co.uk/",
+      "score": "MED",
+      "pain": "Completed review of cost pressure signal for future blog notes.",
+      "suggestion": "No action needed; kept for history.",
+      "quotes": [
+        "Reviewed and marked done."
+      ],
+      "draftComments": [
+        "Archive note: margin protection angle."
+      ],
+      "tags": [
+        "done",
+        "history"
+      ],
+      "capturedAt": "2026-05-21T07:17:06.819Z",
+      "done": true
+    },
+    {
+      "id": "test-done-3",
+      "source": "producthunt",
+      "platform": "ProductHunt",
+      "title": "Reviewed contractor SaaS launch",
+      "url": "https://www.producthunt.com/",
+      "score": "LOW",
+      "pain": "Completed review of a SaaS launch comment opportunity.",
+      "suggestion": "No action needed; kept for history.",
+      "quotes": [
+        "Reviewed and marked done."
+      ],
+      "draftComments": [
+        "Archive note: low priority competitor signal."
+      ],
+      "tags": [
+        "done",
+        "history"
+      ],
+      "capturedAt": "2026-05-21T07:02:06.819Z",
+      "done": true
+    },
     {
       "id": "local-scrape-1",
       "source": "reddit",

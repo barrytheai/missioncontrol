@@ -62,7 +62,8 @@ const scraperSources = [
   { id: "reddit", title: "Reddit", subtitle: "Roofing, ContractorUK, small business, construction" },
   { id: "news", title: "News & Trade", subtitle: "NFRC, FMB, Roofing Today" },
   { id: "producthunt", title: "ProductHunt", subtitle: "SaaS tools, contractor tech, small business tools" },
-  { id: "web", title: "Web Search", subtitle: "Broader queries and direct source fetches" }
+  { id: "web", title: "Web Search", subtitle: "Broader queries and direct source fetches" },
+  { id: "done", title: "Done", subtitle: "Reviewed scrape items" }
 ];
 
 const defaultScraperItems = [
@@ -429,19 +430,34 @@ function persistMemories() {
   localStorage.setItem(MEMORY_KEY, JSON.stringify(state.memories));
 }
 
+function normalizeRemoteMemory(memory) {
+  return {
+    id: memory.id || crypto.randomUUID(),
+    title: memory.title || "Untitled",
+    body: memory.body || ""
+  };
+}
+
+function mergeById(remoteItems, localItems) {
+  const remoteIds = new Set(remoteItems.map((item) => item.id));
+  return [...remoteItems, ...localItems.filter((item) => !remoteIds.has(item.id))];
+}
+
 async function loadMemoriesFromAPI() {
   if (state.editorDirty || state.memoryComposerOpen || state.openMemoryId) return;
   const active = document.activeElement;
   if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
   try {
-    const r = await fetch(`${API_BASE}/api/memories`);
-    const d = await r.json();
-    if (Array.isArray(d.memories) && d.memories.length > 0) {
-      state.memories = d.memories.map(m => ({ id: m.id, title: m.title || "Untitled", body: m.body || "" }));
+    const response = await fetch(`${API_BASE}/api/memories`);
+    const data = await response.json();
+    if (Array.isArray(data.memories) && data.memories.length > 0) {
+      state.memories = mergeById(data.memories.map(normalizeRemoteMemory), state.memories);
       persistMemories();
       if (state.activeView === "memory") render();
     }
-  } catch {}
+  } catch {
+    // Local fallback stays active.
+  }
 }
 
 function loadDocs() {
@@ -465,6 +481,18 @@ function loadDocs() {
 
 function persistDocs() {
   localStorage.setItem(DOCS_KEY, JSON.stringify(state.docs));
+}
+
+function normalizeRemoteDoc(doc) {
+  return {
+    id: doc.id || crypto.randomUUID(),
+    title: doc.title || "Untitled doc",
+    type: doc.type || "Notes",
+    author: doc.author || doc.agent_id || "Agent",
+    status: doc.status || "Draft",
+    body: doc.body || "",
+    updatedAt: doc.updated_at || doc.updatedAt || new Date().toISOString()
+  };
 }
 
 function loadScraperItems() {
@@ -492,7 +520,8 @@ function normalizeScraperItem(item) {
     quotes: Array.isArray(item.quotes) ? item.quotes : [],
     draftComments: Array.isArray(item.draftComments) ? item.draftComments : (Array.isArray(item.draft_comments) ? item.draft_comments : []),
     tags: Array.isArray(item.tags) ? item.tags : [],
-    capturedAt: item.capturedAt || item.captured_at || item.updated_at || new Date().toISOString()
+    capturedAt: item.capturedAt || item.captured_at || item.updated_at || new Date().toISOString(),
+    done: Boolean(item.done || item.completed)
   };
 }
 
@@ -504,9 +533,13 @@ async function loadScraperFromAPI() {
     const response = await fetch(`${API_BASE}/api/scraper`);
     const data = await response.json();
     if (Array.isArray(data.items) && data.items.length > 0) {
-      state.scraperItems = data.items.map(normalizeScraperItem);
+      state.scraperItems = data.items.map((item) => {
+        const normalized = normalizeScraperItem(item);
+        const local = state.scraperItems.find((existing) => existing.id === normalized.id);
+        return { ...normalized, done: Boolean(local?.done || normalized.done) };
+      });
       if (!state.scraperItems.some((item) => item.id === state.selectedScrapeId)) {
-        state.selectedScrapeId = state.scraperItems[0]?.id || null;
+        state.selectedScrapeId = null;
       }
       persistScraperItems();
       if (state.activeView === "scraper") render();
@@ -524,15 +557,7 @@ async function loadDocsFromAPI() {
     const response = await fetch(`${API_BASE}/api/docs`);
     const data = await response.json();
     if (Array.isArray(data.docs)) {
-      state.docs = data.docs.map((doc) => ({
-        id: doc.id,
-        title: doc.title || "Untitled doc",
-        type: doc.type || "Notes",
-        author: doc.author || doc.agent_id || "Agent",
-        status: doc.status || "Draft",
-        body: doc.body || "",
-        updatedAt: doc.updated_at || doc.updatedAt || new Date().toISOString()
-      }));
+      state.docs = mergeById(data.docs.map(normalizeRemoteDoc), state.docs);
       persistDocs();
       if (state.activeView === "docs") render();
     }
@@ -619,6 +644,7 @@ async function api(path, options = {}) {
 
 async function loadRemoteState(silent = false) {
   if (state.editorDirty) return;
+  if (state.activeView === "docs" && state.openDocId && !state.docComposerOpen) return;
   const active = document.activeElement;
   if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT")) return;
   try {
@@ -627,7 +653,11 @@ async function loadRemoteState(silent = false) {
     agents = normalizeAgents(remote.agents || agents);
     events = remote.events || events;
     if (Array.isArray(remote.scraperItems) && remote.scraperItems.length > 0) {
-      state.scraperItems = remote.scraperItems.map(normalizeScraperItem);
+      state.scraperItems = remote.scraperItems.map((item) => {
+        const normalized = normalizeScraperItem(item);
+        const local = state.scraperItems.find((existing) => existing.id === normalized.id);
+        return { ...normalized, done: Boolean(local?.done || normalized.done) };
+      });
       persistScraperItems();
     }
     if (Array.isArray(remote.calendarEvents) && remote.calendarEvents.length > 0) {
@@ -641,10 +671,32 @@ async function loadRemoteState(silent = false) {
 }
 
 function render() {
+  const scrollState = captureScrollState();
   userAvatarButton.textContent = state.userInitials;
   renderAgents();
   renderNotifications();
   renderActiveView();
+  restoreScrollState(scrollState);
+}
+
+function captureScrollState() {
+  return {
+    boardArea: document.querySelector(".board-area")?.scrollLeft || 0,
+    taskLanes: Array.from(document.querySelectorAll(".lane[data-lane]")).map((lane) => ({
+      lane: lane.dataset.lane,
+      top: lane.querySelector(".mission-stack")?.scrollTop || 0
+    }))
+  };
+}
+
+function restoreScrollState(scrollState) {
+  if (!scrollState) return;
+  const boardArea = document.querySelector(".board-area");
+  if (boardArea) boardArea.scrollLeft = scrollState.boardArea || 0;
+  (scrollState.taskLanes || []).forEach((item) => {
+    const stack = document.querySelector(`.lane[data-lane="${CSS.escape(item.lane)}"] .mission-stack`);
+    if (stack) stack.scrollTop = item.top || 0;
+  });
 }
 
 function renderActiveView() {
@@ -957,6 +1009,7 @@ function projectsMarkup() {
       <span>${archivedProjects.length} archived</span>
       <button class="${state.projectView === "active" ? "active" : ""}" type="button" data-project-view="active">Active</button>
       <button class="${state.projectView === "archived" ? "active" : ""}" type="button" data-project-view="archived">Archived</button>
+      <button class="create-button compact" type="button" data-add-project>Create Project</button>
     </div>
     <div class="projects-grid">
       ${visibleProjects.map((project, index) => `
@@ -1154,6 +1207,26 @@ function saveProject(id) {
   showToast("Project saved");
 }
 
+function addProject() {
+  const project = {
+    id: crypto.randomUUID(),
+    title: "New Project",
+    description: "Describe the project, owner, goals, and current focus.",
+    status: "Planning",
+    owner: "Cece",
+    priority: "Medium",
+    progress: 0,
+    tasks: "0/0"
+  };
+  projects.unshift(project);
+  persistProjects();
+  state.projectView = "active";
+  state.openProjectId = project.id;
+  state.activeView = "project-detail";
+  render();
+  showToast("Project created");
+}
+
 function saveProjectFields(id) {
   const project = projects.find((item) => item.id === id);
   if (!project || project.archivedAt) return;
@@ -1179,6 +1252,10 @@ function archiveProject(id) {
 function deleteProject(id) {
   const project = projects.find((item) => item.id === id);
   projects = projects.filter((item) => item.id !== id);
+  if (state.openProjectId === id) {
+    state.openProjectId = null;
+    state.activeView = "projects";
+  }
   state.editorDirty = false;
   persistProjects();
   render();
@@ -1276,6 +1353,7 @@ function memoryComposerMarkup() {
 
 function calendarMarkup() {
   const days = weekDays(state.calendarWeekOffset);
+  const hours = calendarHours();
   return `
     <div class="view-actions">
       <button class="secondary-button" type="button" data-calendar-prev>Previous Week</button>
@@ -1284,20 +1362,43 @@ function calendarMarkup() {
     </div>
     ${(state.calendarComposerOpen || state.openCalendarItemId) ? calendarComposerMarkup() : ""}
     <div class="calendar-preview">
-      ${days.map((day) => `
-        <section>
-          <h3>${day.label}</h3>
-          ${calendarItemsForDay(day.date).map((item) => `
-            <button type="button" data-calendar-open="${item.id}">
-              <strong>${item.time}</strong>
-              <span>${item.title}</span>
-              <small>${item.owner}</small>
-            </button>
-          `).join("") || `<p class="empty-day">No items</p>`}
-        </section>
-      `).join("")}
+      <div class="calendar-time-rail" aria-hidden="true">
+        <span></span>
+        ${hours.map((hour) => `<time>${String(hour).padStart(2, "0")}:00</time>`).join("")}
+      </div>
+      ${days.map((day) => {
+        const items = calendarItemsForDay(day.date);
+        return `
+          <section class="calendar-day-column">
+            <h3>${day.label}</h3>
+            <div class="calendar-day-body">
+              ${hours.map(() => `<span class="calendar-hour-line"></span>`).join("")}
+              ${items.map((item) => `
+                <button class="calendar-event" style="${calendarEventStyle(item)}" type="button" data-calendar-open="${item.id}" title="${escapeAttribute(`${item.time} ${item.title}`)}">
+                  <strong>${escapeHtml(item.time)}</strong>
+                  <span>${escapeHtml(item.title)}</span>
+                </button>
+              `).join("")}
+            </div>
+          </section>
+        `;
+      }).join("")}
     </div>
   `;
+}
+
+function calendarHours() {
+  return Array.from({ length: 12 }, (_, index) => index + 8);
+}
+
+function calendarEventStyle(item) {
+  const [hourPart, minutePart] = String(item.time || "09:00").split(":").map((value) => Number(value));
+  const hour = Number.isFinite(hourPart) ? hourPart : 9;
+  const minute = Number.isFinite(minutePart) ? minutePart : 0;
+  const startHour = 8;
+  const rowHeight = 52;
+  const top = Math.max(0, Math.min((calendarHours().length - 1) * rowHeight, ((hour - startHour) * rowHeight) + ((minute / 60) * rowHeight)));
+  return `top: ${top}px;`;
 }
 
 function memoryMarkup() {
@@ -1334,7 +1435,8 @@ function agentsMarkup() {
 }
 
 function scraperMarkup() {
-  const selected = state.scraperItems.find((item) => item.id === state.selectedScrapeId) || state.scraperItems[0];
+  const activeItems = state.scraperItems.filter((item) => !item.done);
+  const selected = activeItems.find((item) => item.id === state.selectedScrapeId) || null;
   return `
     <section class="scraper-shell">
       <div class="scraper-board">
@@ -1347,9 +1449,9 @@ function scraperMarkup() {
 }
 
 function scraperLaneMarkup(source) {
-  const items = state.scraperItems.filter((item) => item.source === source.id);
+  const items = state.scraperItems.filter((item) => source.id === "done" ? item.done : item.source === source.id && !item.done);
   return `
-    <section class="scraper-lane">
+    <section class="scraper-lane ${source.id === "done" ? "done-lane" : ""}">
       <header>
         <div>
           <h3>${source.title}</h3>
@@ -1367,28 +1469,20 @@ function scraperLaneMarkup(source) {
 function scraperCardMarkup(item) {
   return `
     <button class="scraper-card ${state.selectedScrapeId === item.id ? "selected" : ""}" type="button" data-scraper-select="${item.id}">
-      <div class="scraper-card-top">
-        <span>${escapeHtml(item.platform)}</span>
-        <strong class="score ${item.score.toLowerCase()}">${escapeHtml(item.score)}</strong>
-      </div>
       <h4>${escapeHtml(item.title)}</h4>
       <p>${escapeHtml(item.pain)}</p>
-      <div class="scraper-tags">
-        ${(item.tags || []).slice(0, 3).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
-      </div>
-      <small>${formatDateTime(item.capturedAt)}</small>
+      <span class="scraper-card-meta">
+        <span class="platform-chip">${escapeHtml(item.platform)}</span>
+        <strong class="score ${item.score.toLowerCase()}">${escapeHtml(item.score)}</strong>
+        <span class="scraper-date">Populated ${formatDateTime(item.capturedAt)}</span>
+      </span>
     </button>
   `;
 }
 
 function scraperDetailMarkup(item) {
   if (!item) {
-    return `
-      <aside class="scraper-detail">
-        <h3>No scrape selected</h3>
-        <p>Select an item to inspect links, pain points, and drafted comments.</p>
-      </aside>
-    `;
+    return "";
   }
 
   return `
@@ -1396,6 +1490,7 @@ function scraperDetailMarkup(item) {
       <div class="scraper-detail-head">
         <span class="score ${item.score.toLowerCase()}">${escapeHtml(item.score)}</span>
         <span>${escapeHtml(item.platform)}</span>
+        <button class="close-button icon-close" type="button" aria-label="Close scraper detail" data-close-scraper-detail>&times;</button>
       </div>
       <h3>${escapeHtml(item.title)}</h3>
       <p>${escapeHtml(item.pain)}</p>
@@ -1405,6 +1500,9 @@ function scraperDetailMarkup(item) {
           <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.url)}</a>
         </div>
       ` : ""}
+      <button class="${item.done ? "secondary-button" : "create-button"} compact" type="button" data-scraper-toggle-done="${escapeAttribute(item.id)}">
+        ${item.done ? "Move Back to Review" : "Mark Done"}
+      </button>
       <div class="scraper-section">
         <h4>Suggested action</h4>
         <p>${escapeHtml(item.suggestion || "Review and decide whether this is worth acting on.")}</p>
@@ -1424,17 +1522,31 @@ function scraperDetailMarkup(item) {
 }
 
 function scraperSummaryMarkup(selected) {
-  const highCount = state.scraperItems.filter((item) => item.score === "HIGH").length;
-  const top = state.scraperItems.find((item) => item.score === "HIGH") || selected || state.scraperItems[0];
-  const phrases = [...new Set(state.scraperItems.flatMap((item) => item.quotes || []))].slice(0, 4);
+  const summaryDate = new Date();
+  const dailyItems = state.scraperItems.filter((item) => !item.done && isSameCalendarDay(item.capturedAt, summaryDate));
+  const highCount = dailyItems.filter((item) => item.score === "HIGH").length;
+  const top = dailyItems.find((item) => item.score === "HIGH") || dailyItems[0] || null;
+  const phrases = [...new Set(dailyItems.flatMap((item) => item.quotes || []))].slice(0, 4);
+  if (dailyItems.length === 0) {
+    return `
+      <section class="scraper-summary">
+        <article class="scraper-summary-empty">
+          <h3>Daily summary</h3>
+          <time>${formatSummaryDate(summaryDate)}</time>
+          <p>No scraper intelligence populated for this date yet.</p>
+        </article>
+      </section>
+    `;
+  }
   return `
     <section class="scraper-summary">
       <article>
         <h3>What mattered</h3>
+        <time>${formatSummaryDate(summaryDate)}</time>
         <ul>
-          <li>${highCount} high-opportunity scrape${highCount === 1 ? "" : "s"} ready for review.</li>
-          <li>Quoting speed, lead quality, and cost pressure are recurring signals.</li>
-          <li>X and LinkedIn remain manual follow-up channels because of login limits.</li>
+          <li>${dailyItems.length} scrape item${dailyItems.length === 1 ? "" : "s"} populated today.</li>
+          <li>${highCount} high-opportunity item${highCount === 1 ? "" : "s"} ready for review.</li>
+          <li>${escapeHtml(top?.pain || "No top pain point captured yet.")}</li>
         </ul>
       </article>
       <article>
@@ -1462,6 +1574,9 @@ function scraperSummaryMarkup(selected) {
 function templatesMarkup() {
   const items = state.templates;
   return `
+    <div class="view-actions">
+      <button class="create-button compact" type="button" data-add-template>Create Template</button>
+    </div>
     <div class="resource-grid">
       ${items.map((tpl, i) => `
         <article class="resource-card">
@@ -1530,6 +1645,31 @@ function templateWorkspaceMarkup() {
       </div>
     </div>
   `;
+}
+
+function addTemplateItem() {
+  state.templates.unshift({
+    title: "New Template",
+    copy: "Describe the repeatable task recipe here."
+  });
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(state.templates));
+  state.editTemplateIndex = 0;
+  state.activeView = "template-detail";
+  render();
+}
+
+function toggleScraperDone(id) {
+  const item = state.scraperItems.find((scrape) => scrape.id === id);
+  if (!item) return;
+  item.done = !item.done;
+  if (item.done && state.selectedScrapeId === id) {
+    state.selectedScrapeId = state.scraperItems.find((scrape) => !scrape.done && scrape.id !== id)?.id || null;
+  } else if (!item.done) {
+    state.selectedScrapeId = id;
+  }
+  persistScraperItems();
+  render();
+  showToast(item.done ? "Scrape item moved to Done" : "Scrape item moved back to review");
 }
 
 function integrationsMarkup() {
@@ -1828,6 +1968,27 @@ function formatDateTime(value) {
     hour: "2-digit",
     minute: "2-digit"
   })}`;
+}
+
+function formatSummaryDate(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  });
+}
+
+function isSameCalendarDay(value, reference) {
+  if (!value) return false;
+  const date = new Date(value);
+  const target = reference instanceof Date ? reference : new Date(reference);
+  if (Number.isNaN(date.getTime()) || Number.isNaN(target.getTime())) return false;
+  return date.getFullYear() === target.getFullYear()
+    && date.getMonth() === target.getMonth()
+    && date.getDate() === target.getDate();
 }
 
 function formatActivityTime(value) {
@@ -2199,12 +2360,10 @@ function docsMarkup() {
   const openDoc = state.openDocId
     ? state.docs.find((doc) => doc.id === state.openDocId)
     : null;
-
   const showGrid = !openDoc && !state.docComposerOpen;
-
   const gridHtml = showGrid ? `
     <div class="docs-grid">
-      ${state.docs.filter(doc => doc.status !== "Archived").map((doc) => `
+      ${state.docs.filter((doc) => doc.status !== "Archived").map((doc) => `
         <article class="doc-card">
           <div class="doc-card-top">
             <span class="doc-type">${escapeHtml(doc.type || "Notes")}</span>
@@ -2226,6 +2385,7 @@ function docsMarkup() {
     <div class="view-actions">
       <button class="create-button compact" type="button" data-add-doc>Create Doc</button>
     </div>
+
     ${state.docComposerOpen ? docComposerMarkup(openDoc) : ""}
     ${openDoc && !state.docComposerOpen ? docReaderMarkup(openDoc) : ""}
     ${gridHtml}
@@ -2474,18 +2634,24 @@ function saveMemoryItem() {
   state.openMemoryId = null;
   state.editorDirty = false;
   persistMemories();
-  // Sync to API
   if (editingId) {
     fetch(`${API_BASE}/api/memories/${editingId}`, {
-      method: "PATCH", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
       body: JSON.stringify({ title, body })
     }).catch(() => {});
   } else {
-    const newMem = state.memories[0];
+    const newMemory = state.memories[0];
     fetch(`${API_BASE}/api/memories`, {
-      method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
       body: JSON.stringify({ title, body })
-    }).then(r => r.json()).then(d => { if (d.memory?.id) { newMem.id = d.memory.id; persistMemories(); } }).catch(() => {});
+    }).then((response) => response.json()).then((data) => {
+      if (data.memory?.id) {
+        newMemory.id = data.memory.id;
+        persistMemories();
+      }
+    }).catch(() => {});
   }
   render();
   showToast("Memory saved");
@@ -2505,9 +2671,9 @@ function deleteMemoryItem(id) {
   state.memoryComposerOpen = false;
   state.editorDirty = false;
   persistMemories();
-  // Sync to API
   fetch(`${API_BASE}/api/memories/${id}`, {
-    method: "DELETE", headers: { "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` }
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` }
   }).catch(() => {});
   render();
   showToast("Memory deleted");
@@ -2592,6 +2758,7 @@ document.addEventListener("click", (event) => {
   const bellButton = event.target.closest(".bell");
   const notificationJump = event.target.closest("[data-notification-jump]");
   const previewCard = event.target.closest("[data-preview-card]");
+  const addTemplate = event.target.closest("[data-add-template]");
   const editTemplate = event.target.closest("[data-edit-template]");
   const saveTemplate = event.target.closest("[data-save-template]");
   const cancelTemplateEdit = event.target.closest("[data-cancel-template-edit]");
@@ -2616,6 +2783,8 @@ document.addEventListener("click", (event) => {
   const deleteDoc = event.target.closest("[data-doc-delete]");
   const archiveDoc = event.target.closest("[data-doc-archive]");
   const scraperSelect = event.target.closest("[data-scraper-select]");
+  const scraperToggleDone = event.target.closest("[data-scraper-toggle-done]");
+  const scraperCloseDetail = event.target.closest("[data-close-scraper-detail]");
   const addMemory = event.target.closest("[data-add-memory]");
   const memorySave = event.target.closest("[data-memory-save]");
   const memoryCancel = event.target.closest("[data-memory-cancel]");
@@ -2623,6 +2792,7 @@ document.addEventListener("click", (event) => {
   const openMemory = event.target.closest("[data-open-memory]");
   const closePreview = event.target.closest("[data-close-preview]");
   const projectView = event.target.closest("[data-project-view]");
+  const addProjectButton = event.target.closest("[data-add-project]");
   const saveProjectButton = event.target.closest("[data-save-project]");
   const archiveProjectButton = event.target.closest("[data-archive-project]");
   const deleteProjectButton = event.target.closest("[data-delete-project]");
@@ -2639,6 +2809,11 @@ document.addEventListener("click", (event) => {
   if (projectView) {
     state.projectView = projectView.dataset.projectView;
     render();
+    return;
+  }
+
+  if (addProjectButton) {
+    addProject();
     return;
   }
 
@@ -2681,6 +2856,9 @@ document.addEventListener("click", (event) => {
 
   if (select) {
     state.selectedId = select.dataset.select;
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      state.activeView = "task-detail";
+    }
     render();
     return;
   }
@@ -2801,6 +2979,11 @@ document.addEventListener("click", (event) => {
     state.notificationsOpen = false;
     state.activeView = "tasks";
     render();
+    return;
+  }
+
+  if (addTemplate) {
+    addTemplateItem();
     return;
   }
 
@@ -2942,12 +3125,7 @@ document.addEventListener("click", (event) => {
 
   if (editDoc) {
     state.openDocId = editDoc.dataset.editDoc;
-    state.docComposerOpen = false;
-    // Switch to edit mode - open the composer with the doc
-    const doc = state.docs.find(d => d.id === editDoc.dataset.editDoc);
-    if (doc) {
-      state.docComposerOpen = true;
-    }
+    state.docComposerOpen = true;
     render();
     return;
   }
@@ -2981,6 +3159,17 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (scraperCloseDetail) {
+    state.selectedScrapeId = null;
+    render();
+    return;
+  }
+
+  if (scraperToggleDone) {
+    toggleScraperDone(scraperToggleDone.dataset.scraperToggleDone);
+    return;
+  }
+
   if (addMemory) {
     addMemoryItem();
     return;
@@ -3010,6 +3199,14 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("dblclick", (event) => {
+  const taskCard = event.target.closest("[data-select]");
+  if (taskCard) {
+    state.selectedId = taskCard.dataset.select;
+    state.activeView = "task-detail";
+    render();
+    return;
+  }
+
   if (event.target.closest("#detailPanel")) {
     state.activeView = "task-detail";
     render();
@@ -3117,15 +3314,15 @@ missionForm.addEventListener("submit", (event) => {
 
 render();
 loadRemoteState();
+loadMemoriesFromAPI();
 loadDocsFromAPI();
 loadScraperFromAPI();
-loadMemoriesFromAPI();
 loadCalendarFromAPI();
 setInterval(() => {
   loadRemoteState(true);
+  loadMemoriesFromAPI();
   loadDocsFromAPI();
   loadScraperFromAPI();
-  loadMemoriesFromAPI();
   loadCalendarFromAPI();
 }, 5000);
 
