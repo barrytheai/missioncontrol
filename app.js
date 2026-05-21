@@ -373,6 +373,7 @@ const toast = document.querySelector("#toast");
 const userAvatarButton = document.querySelector("#userAvatarButton");
 const notificationsPanel = document.querySelector("#notificationsPanel");
 const API_BASE = (window.OPENCLAW_API_BASE || localStorage.getItem("OPENCLAW_API_BASE") || "").replace(/\/$/, "");
+let calendarSaveLockUntil = 0; // timestamp ms — blocks loadCalendarFromAPI after a save
 
 function loadTasks() {
   try {
@@ -2620,8 +2621,11 @@ function saveCalendarItem() {
   state.openCalendarItemId = null;
   state.editorDirty = false;
   persistCalendarItems();
+  calendarSaveLockUntil = Date.now() + 5000; // block refresh for 5s
   render();
   showToast(isEditing ? "Calendar item updated" : "Calendar item added");
+  // Reload from API after 2s to confirm save landed
+  setTimeout(() => loadCalendarFromAPI(), 2000);
 }
 
 function openCalendarItem(id) {
