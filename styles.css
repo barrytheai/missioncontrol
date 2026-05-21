@@ -1700,12 +1700,20 @@ kbd {
 .memory-grid article {
   min-height: 190px;
   padding: 18px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .memory-grid p {
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
 }
 
 .memory-grid button {
