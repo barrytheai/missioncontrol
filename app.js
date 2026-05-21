@@ -1388,7 +1388,7 @@ function calendarMarkup() {
 }
 
 function calendarHours() {
-  return Array.from({ length: 12 }, (_, index) => index + 8);
+  return Array.from({ length: 14 }, (_, index) => index + 6);
 }
 
 function getEventMinutes(item) {
@@ -1432,7 +1432,7 @@ function calendarEventStyle(item, col = 0, totalCols = 1) {
   const [hourPart, minutePart] = String(item.time || "09:00").split(":").map((value) => Number(value));
   const hour = Number.isFinite(hourPart) ? hourPart : 9;
   const minute = Number.isFinite(minutePart) ? minutePart : 0;
-  const startHour = 8;
+  const startHour = 6;
   const rowHeight = 52;
   const top = Math.max(0, Math.min((calendarHours().length - 1) * rowHeight, ((hour - startHour) * rowHeight) + ((minute / 60) * rowHeight)));
   const width = totalCols > 1 ? `calc(${100 / totalCols}% - 3px)` : "calc(100% - 8px)";
