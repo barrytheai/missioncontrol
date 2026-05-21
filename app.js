@@ -1373,8 +1373,8 @@ function calendarMarkup() {
             <h3>${day.label}</h3>
             <div class="calendar-day-body">
               ${hours.map(() => `<span class="calendar-hour-line"></span>`).join("")}
-              ${items.map((item) => `
-                <button class="calendar-event" style="${calendarEventStyle(item)}" type="button" data-calendar-open="${item.id}" title="${escapeAttribute(`${item.time} ${item.title}`)}">
+              ${layoutCalendarItems(items).map(({ item, col, totalCols }) => `
+                <button class="calendar-event" style="${calendarEventStyle(item, col, totalCols)}" type="button" data-calendar-open="${item.id}" title="${escapeAttribute(`${item.time} ${item.title}`)}">
                   <strong>${escapeHtml(item.time)}</strong>
                   <span>${escapeHtml(item.title)}</span>
                 </button>
@@ -1391,14 +1391,53 @@ function calendarHours() {
   return Array.from({ length: 12 }, (_, index) => index + 8);
 }
 
-function calendarEventStyle(item) {
+function getEventMinutes(item) {
+  const [h, m] = String(item.time || "09:00").split(":").map(Number);
+  return (Number.isFinite(h) ? h : 9) * 60 + (Number.isFinite(m) ? m : 0);
+}
+
+function layoutCalendarItems(items) {
+  const sorted = [...items].sort((a, b) => getEventMinutes(a) - getEventMinutes(b));
+  const result = [];
+  const groups = [];
+  for (const item of sorted) {
+    const start = getEventMinutes(item);
+    const end = start + 60;
+    let placed = false;
+    for (const group of groups) {
+      const overlaps = group.some(g => {
+        const gs = getEventMinutes(g.item);
+        const ge = gs + 60;
+        return start < ge && end > gs;
+      });
+      if (overlaps) {
+        const col = group.length;
+        group.push({ item, col });
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) groups.push([{ item, col: 0 }]);
+  }
+  for (const group of groups) {
+    const totalCols = group.length;
+    for (const { item, col } of group) {
+      result.push({ item, col, totalCols });
+    }
+  }
+  return result;
+}
+
+function calendarEventStyle(item, col = 0, totalCols = 1) {
   const [hourPart, minutePart] = String(item.time || "09:00").split(":").map((value) => Number(value));
   const hour = Number.isFinite(hourPart) ? hourPart : 9;
   const minute = Number.isFinite(minutePart) ? minutePart : 0;
   const startHour = 8;
   const rowHeight = 52;
   const top = Math.max(0, Math.min((calendarHours().length - 1) * rowHeight, ((hour - startHour) * rowHeight) + ((minute / 60) * rowHeight)));
-  return `top: ${top}px;`;
+  const width = totalCols > 1 ? `calc(${100 / totalCols}% - 3px)` : "calc(100% - 8px)";
+  const left = totalCols > 1 ? `calc(${(col / totalCols) * 100}% + 2px)` : "4px";
+  return `top: ${top}px; width: ${width}; left: ${left};`;
 }
 
 function memoryMarkup() {
