@@ -374,6 +374,7 @@ const userAvatarButton = document.querySelector("#userAvatarButton");
 const notificationsPanel = document.querySelector("#notificationsPanel");
 const API_BASE = (window.OPENCLAW_API_BASE || localStorage.getItem("OPENCLAW_API_BASE") || "").replace(/\/$/, "");
 let calendarSaveLockUntil = 0; // timestamp ms — blocks loadCalendarFromAPI after a save
+let taskSaveLockUntil = 0; // timestamp ms — blocks loadRemoteState after a task save
 
 function loadTasks() {
   try {
@@ -2278,6 +2279,7 @@ function saveTaskEdit(id) {
   patch.status = statusFromLane(patch.lane);
   patch.activity = buildEditActivity(task, patch);
   state.editorDirty = false;
+  taskSaveLockUntil = Date.now() + 5000; // block refresh for 5s after save
   patchTask(id, patch);
   showToast("Task updated");
 }
