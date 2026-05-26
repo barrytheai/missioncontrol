@@ -684,8 +684,10 @@ function render() {
 }
 
 function captureScrollState() {
+  const appContent = document.querySelector("#appContent") || document.querySelector(".app-content") || document.documentElement;
   return {
     boardArea: document.querySelector(".board-area")?.scrollLeft || 0,
+    appContent: appContent?.scrollTop || window.scrollY || 0,
     taskLanes: Array.from(document.querySelectorAll(".lane[data-lane]")).map((lane) => ({
       lane: lane.dataset.lane,
       top: lane.querySelector(".mission-stack")?.scrollTop || 0
@@ -697,6 +699,12 @@ function restoreScrollState(scrollState) {
   if (!scrollState) return;
   const boardArea = document.querySelector(".board-area");
   if (boardArea) boardArea.scrollLeft = scrollState.boardArea || 0;
+  const appContent = document.querySelector("#appContent") || document.querySelector(".app-content");
+  if (appContent && scrollState.appContent) {
+    appContent.scrollTop = scrollState.appContent;
+  } else if (scrollState.appContent) {
+    window.scrollTo(0, scrollState.appContent);
+  }
   (scrollState.taskLanes || []).forEach((item) => {
     const stack = document.querySelector(`.lane[data-lane="${CSS.escape(item.lane)}"] .mission-stack`);
     if (stack) stack.scrollTop = item.top || 0;
