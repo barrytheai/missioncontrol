@@ -603,6 +603,7 @@ function mergeRemoteCalendarEvents(events) {
 
 async function loadCalendarFromAPI() {
   if (state.editorDirty || state.calendarComposerOpen || state.openCalendarItemId) return;
+  if (Date.now() < calendarSaveLockUntil) return;
   try {
     const r = await fetch(`${API_BASE}/api/calendar`);
     const d = await r.json();
@@ -646,6 +647,7 @@ async function api(path, options = {}) {
 
 async function loadRemoteState(silent = false) {
   if (state.editorDirty) return;
+  if (Date.now() < taskSaveLockUntil) return;
   if (state.activeView === "docs" && state.openDocId && !state.docComposerOpen) return;
   const active = document.activeElement;
   if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.tagName === "SELECT")) return;
