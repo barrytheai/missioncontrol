@@ -61,7 +61,7 @@ const defaultProjects = [
 const scraperSources = [
   { id: "reddit", title: "Reddit", subtitle: "Roofing, ContractorUK, small business, construction" },
   { id: "news", title: "News & Trade", subtitle: "NFRC, FMB, Roofing Today" },
-  { id: "producthunt", title: "ProductHunt", subtitle: "SaaS tools, contractor tech, small business tools" },
+  { id: "producthunt", title: "Social Trends", subtitle: "TikTok trends, LinkedIn topics, hashtags, viral trades content" },
   { id: "web", title: "Web Search", subtitle: "Broader queries and direct source fetches" },
   { id: "done", title: "Done", subtitle: "Reviewed scrape items" }
 ];
