@@ -687,10 +687,15 @@ function captureScrollState() {
   const appContent = document.querySelector("#appContent") || document.querySelector(".app-content") || document.documentElement;
   return {
     boardArea: document.querySelector(".board-area")?.scrollLeft || 0,
+    scraperBoard: document.querySelector(".scraper-board")?.scrollLeft || 0,
     appContent: appContent?.scrollTop || window.scrollY || 0,
     taskLanes: Array.from(document.querySelectorAll(".lane[data-lane]")).map((lane) => ({
       lane: lane.dataset.lane,
       top: lane.querySelector(".mission-stack")?.scrollTop || 0
+    })),
+    scraperLanes: Array.from(document.querySelectorAll(".scraper-lane")).map((lane, i) => ({
+      index: i,
+      top: lane.scrollTop || 0
     }))
   };
 }
@@ -699,6 +704,8 @@ function restoreScrollState(scrollState) {
   if (!scrollState) return;
   const boardArea = document.querySelector(".board-area");
   if (boardArea) boardArea.scrollLeft = scrollState.boardArea || 0;
+  const scraperBoard = document.querySelector(".scraper-board");
+  if (scraperBoard && scrollState.scraperBoard) scraperBoard.scrollLeft = scrollState.scraperBoard;
   const appContent = document.querySelector("#appContent") || document.querySelector(".app-content");
   if (appContent && scrollState.appContent) {
     appContent.scrollTop = scrollState.appContent;
@@ -708,6 +715,11 @@ function restoreScrollState(scrollState) {
   (scrollState.taskLanes || []).forEach((item) => {
     const stack = document.querySelector(`.lane[data-lane="${CSS.escape(item.lane)}"] .mission-stack`);
     if (stack) stack.scrollTop = item.top || 0;
+  });
+  const scraperLaneEls = document.querySelectorAll(".scraper-lane");
+  (scrollState.scraperLanes || []).forEach((item) => {
+    const el = scraperLaneEls[item.index];
+    if (el && item.top) el.scrollTop = item.top;
   });
 }
 
