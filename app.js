@@ -1551,9 +1551,12 @@ function scraperDetailMarkup(item) {
           <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.url)}</a>
         </div>
       ` : ""}
-      <button class="${item.done ? "secondary-button" : "create-button"} compact" type="button" data-scraper-toggle-done="${escapeAttribute(item.id)}">
-        ${item.done ? "Move Back to Review" : "Mark Done"}
-      </button>
+      <div style="display:flex;gap:8px;">
+        <button class="${item.done ? "secondary-button" : "create-button"} compact" type="button" data-scraper-toggle-done="${escapeAttribute(item.id)}">
+          ${item.done ? "Move Back" : "Mark Done"}
+        </button>
+        <button class="danger-button compact" type="button" data-scraper-delete="${escapeAttribute(item.id)}">Delete</button>
+      </div>
       <div class="scraper-section">
         <h4>Suggested action</h4>
         <p>${escapeHtml(item.suggestion || "Review and decide whether this is worth acting on.")}</p>
@@ -2839,6 +2842,7 @@ document.addEventListener("click", (event) => {
   const archiveDoc = event.target.closest("[data-doc-archive]");
   const scraperSelect = event.target.closest("[data-scraper-select]");
   const scraperToggleDone = event.target.closest("[data-scraper-toggle-done]");
+  const scraperDelete = event.target.closest("[data-scraper-delete]");
   const scraperCloseDetail = event.target.closest("[data-close-scraper-detail]");
   const addMemory = event.target.closest("[data-add-memory]");
   const memorySave = event.target.closest("[data-memory-save]");
@@ -3226,6 +3230,19 @@ document.addEventListener("click", (event) => {
 
   if (scraperToggleDone) {
     toggleScraperDone(scraperToggleDone.dataset.scraperToggleDone);
+    return;
+  }
+
+  if (scraperDelete) {
+    const id = scraperDelete.dataset.scraperDelete;
+    state.scraperItems = state.scraperItems.filter((item) => item.id !== id);
+    if (state.selectedScrapeId === id) state.selectedScrapeId = state.scraperItems.find((i) => !i.done)?.id || null;
+    persistScraperItems();
+    fetch(`${API_BASE}/api/scraper/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` }
+    }).catch(() => {});
+    render();
     return;
   }
 
