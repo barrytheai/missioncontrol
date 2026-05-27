@@ -1487,7 +1487,7 @@ function agentsMarkup() {
 
 function scraperMarkup() {
   const activeItems = state.scraperItems.filter((item) => !item.done);
-  const selected = activeItems.find((item) => item.id === state.selectedScrapeId) || null;
+  const selected = state.scraperItems.find((item) => item.id === state.selectedScrapeId) || null;
   return `
     <section class="scraper-shell">
       <div class="scraper-board">
@@ -1716,11 +1716,8 @@ function toggleScraperDone(id) {
   const item = state.scraperItems.find((scrape) => scrape.id === id);
   if (!item) return;
   item.done = !item.done;
-  if (item.done && state.selectedScrapeId === id) {
-    state.selectedScrapeId = state.scraperItems.find((scrape) => !scrape.done && scrape.id !== id)?.id || null;
-  } else if (!item.done) {
-    state.selectedScrapeId = id;
-  }
+  // Keep item selected so user can still read it after marking done
+  state.selectedScrapeId = id;
   persistScraperItems();
   render();
   showToast(item.done ? "Scrape item moved to Done" : "Scrape item moved back to review");
