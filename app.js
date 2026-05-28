@@ -680,7 +680,8 @@ function render() {
   renderAgents();
   renderNotifications();
   renderActiveView();
-  restoreScrollState(scrollState);
+  // Defer scroll restore until after browser paints new DOM
+  requestAnimationFrame(() => restoreScrollState(scrollState));
 }
 
 function captureScrollState() {
