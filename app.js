@@ -694,9 +694,9 @@ function captureScrollState() {
       lane: lane.dataset.lane,
       top: lane.querySelector(".mission-stack")?.scrollTop || 0
     })),
-    scraperLanes: Array.from(document.querySelectorAll(".scraper-lane")).map((lane, i) => ({
+    scraperStacks: Array.from(document.querySelectorAll(".scraper-stack")).map((stack, i) => ({
       index: i,
-      top: lane.scrollTop || 0
+      top: stack.scrollTop || 0
     }))
   };
 }
@@ -717,9 +717,9 @@ function restoreScrollState(scrollState) {
     const stack = document.querySelector(`.lane[data-lane="${CSS.escape(item.lane)}"] .mission-stack`);
     if (stack) stack.scrollTop = item.top || 0;
   });
-  const scraperLaneEls = document.querySelectorAll(".scraper-lane");
-  (scrollState.scraperLanes || []).forEach((item) => {
-    const el = scraperLaneEls[item.index];
+  const scraperStackEls = document.querySelectorAll(".scraper-stack");
+  (scrollState.scraperStacks || []).forEach((item) => {
+    const el = scraperStackEls[item.index];
     if (el && item.top) el.scrollTop = item.top;
   });
 }
