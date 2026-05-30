@@ -316,6 +316,9 @@ let events = [
   ["10:22:41", "ok", "Robbie", "Documentation updated", "API Docs Overhaul"]
 ];
 
+// Read-only scraper mode — activated via ?scraper_readonly=1 in URL
+const SCRAPER_READONLY = new URLSearchParams(window.location.search).get("scraper_readonly") === "1";
+
 const state = {
   activeView: "tasks",
   tasks: loadTasks(),
@@ -1561,15 +1564,17 @@ function scraperDetailMarkup(item) {
       ${item.url ? `
         <div class="source-reference">
           <span>Source</span>
-          <a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.url)}</a>
+          ${SCRAPER_READONLY ? `<span class="scraper-url-text">${escapeHtml(item.url)}</span>` : `<a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.url)}</a>`}
         </div>
       ` : ""}
+      ${SCRAPER_READONLY ? "" : `
       <div style="display:flex;gap:8px;">
         <button class="${item.done ? "secondary-button" : "create-button"} compact" type="button" data-scraper-toggle-done="${escapeAttribute(item.id)}">
           ${item.done ? "Move Back" : "Mark Done"}
         </button>
         <button class="danger-button compact" type="button" data-scraper-delete="${escapeAttribute(item.id)}">Delete</button>
       </div>
+      `}
       <div class="scraper-section">
         <h4>Suggested action</h4>
         <p>${escapeHtml(item.suggestion || "Review and decide whether this is worth acting on.")}</p>
