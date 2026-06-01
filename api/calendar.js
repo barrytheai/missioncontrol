@@ -20,6 +20,7 @@ module.exports = async (req, res) => {
       date: body.date || "",
       time: body.time || "",
       description: String(body.description || "").trim(),
+      recurring: body.recurring || "none",
       agent_ids: Array.isArray(body.agentIds) ? body.agentIds : [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -37,6 +38,7 @@ module.exports = async (req, res) => {
       ...(body.time !== undefined && { time: body.time }),
       ...(body.description !== undefined && { description: body.description }),
       ...(body.agentIds && { agent_ids: body.agentIds }),
+      ...(body.recurring !== undefined && { recurring: body.recurring }),
       updated_at: new Date().toISOString()
     };
     const r = await supabaseFetch(`/calendar?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(updates) });
