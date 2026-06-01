@@ -462,9 +462,9 @@ async function loadChecklistFromAPI() {
   const weekStart = getMondayOfWeek(date);
   try {
     const [dayRes, weekRes, settingRes] = await Promise.all([
-      fetch(`${API_BASE}/api/checklist?date=${date}`),
-      fetch(`${API_BASE}/api/checklist?weekStart=${weekStart}`),
-      fetch(`${API_BASE}/api/checklist?setting=_post_launch_enabled`)
+      fetch(`${API_BASE}/api/state?checklist=1&date=${date}`),
+      fetch(`${API_BASE}/api/state?checklist=1&weekStart=${weekStart}`),
+      fetch(`${API_BASE}/api/state?checklist=1&setting=_post_launch_enabled`)
     ]);
     const dayData = await dayRes.json();
     const weekData = await weekRes.json();
@@ -509,7 +509,7 @@ async function saveChecklistItem(item_key, checked, value) {
   }
   render();
   try {
-    await fetch(`${API_BASE}/api/checklist`, {
+    await fetch(`${API_BASE}/api/state?checklist=1`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
@@ -523,7 +523,7 @@ async function savePostLaunchSetting(enabled) {
   postLaunchEnabled = enabled;
   render();
   try {
-    await fetch(`${API_BASE}/api/checklist`, {
+    await fetch(`${API_BASE}/api/state?checklist=1`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ date: "settings", item_key: "_post_launch_enabled", checked: enabled })
