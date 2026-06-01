@@ -379,6 +379,276 @@ const API_BASE = (window.OPENCLAW_API_BASE || localStorage.getItem("OPENCLAW_API
 let calendarSaveLockUntil = 0; // timestamp ms — blocks loadCalendarFromAPI after a save
 let taskSaveLockUntil = 0; // timestamp ms — blocks loadRemoteState after a task save
 
+// ── Checklist state ──────────────────────────────────────────────────────────
+const WEEKLY_ITEMS = ["instagram", "tiktok", "linkedin", "facebook"];
+const CHECKLIST_DEF = [
+  { section: "daily", key: "reddit_sp", label: "u/Stock-Performer4939", freq: "daily", children: [
+    { key: "reddit_sp_1", label: "Post 1" }, { key: "reddit_sp_2", label: "Post 2" }, { key: "reddit_sp_3", label: "Post 3" }
+  ]},
+  { section: "daily", key: "reddit_hazel", label: "u/HazelGeeUnit", freq: "daily", children: [
+    { key: "reddit_hazel_1", label: "Post 1" }, { key: "reddit_hazel_2", label: "Post 2" }, { key: "reddit_hazel_3", label: "Post 3" }
+  ]},
+  { section: "daily", key: "reddit_roofboss", label: "u/RoofBossBarry", freq: "daily", children: [
+    { key: "reddit_roofboss_1", label: "Post 1" }, { key: "reddit_roofboss_2", label: "Post 2" }, { key: "reddit_roofboss_3", label: "Post 3" }
+  ]},
+  { section: "daily", key: "reddit_lowtourist", label: "u/Low-Tourist-5813", freq: "daily", children: [
+    { key: "reddit_lowtourist_1", label: "Post 1" }, { key: "reddit_lowtourist_2", label: "Post 2" }, { key: "reddit_lowtourist_3", label: "Post 3" }
+  ]},
+  { section: "daily", key: "reddit_someeye", label: "u/Some_Eye4231", freq: "daily", children: [
+    { key: "reddit_someeye_1", label: "Post 1" }, { key: "reddit_someeye_2", label: "Post 2" }, { key: "reddit_someeye_3", label: "Post 3" }
+  ]},
+  { section: "daily", key: "x", label: "X / Twitter", freq: "daily", children: [
+    { key: "x_post", label: "Post today's content (use morning brief)" },
+    { key: "x_engage", label: "Engage with 3 relevant threads" }
+  ]},
+  { section: "daily", key: "instagram", label: "Instagram", freq: "3x/week" },
+  { section: "daily", key: "tiktok", label: "TikTok", freq: "3x/week" },
+  { section: "daily", key: "linkedin", label: "LinkedIn", freq: "3x/week" },
+  { section: "daily", key: "facebook", label: "Facebook", freq: "3x/week" },
+  { section: "daily", key: "dms", label: "DMs & Comments Sweep", freq: "daily", children: [
+    { key: "dms_reddit", label: "Reddit - check replies and DMs" },
+    { key: "dms_instagram", label: "Instagram - check comments and DMs" },
+    { key: "dms_x", label: "X - check mentions and replies" },
+    { key: "dms_tiktok", label: "TikTok - check comments" },
+    { key: "dms_linkedin", label: "LinkedIn - check notifications" }
+  ]},
+  { section: "daily", key: "cal", label: "Calendar & Calls", freq: "daily", children: [
+    { key: "cal_calendly", label: "Check Calendly - any demos booked today?" },
+    { key: "cal_calls", label: "Any calls to prep for?" }
+  ]},
+  { section: "daily", key: "inbox", label: "Inbox & Follow-Ups", freq: "daily", children: [
+    { key: "inbox_check", label: "Check info@quote-core.com - any inbound leads?" },
+    { key: "inbox_followup", label: "Follow up on any unanswered emails" }
+  ]},
+  { section: "daily", key: "reviews", label: "Reviews", freq: "daily", children: [
+    { key: "reviews_trustpilot", label: "Trustpilot - any new reviews to respond to?" },
+    { key: "reviews_g2", label: "G2 - any new reviews?" },
+    { key: "reviews_capterra", label: "Capterra - any new reviews?" }
+  ]},
+  { section: "daily", key: "mc_review", label: "Mission Control", freq: "daily", note: "Check Review tab - anything pending approval?" },
+  { section: "daily", key: "gsc", label: "Google Search Console", freq: "daily", note: "Check GSC - new indexed pages or coverage issues?" },
+  // Post-launch section
+  { section: "postlaunch", key: "cold_calls", label: "Cold Calls", freq: "daily", inputType: "number", note: "Calls made today" },
+  { section: "postlaunch", key: "instantly", label: "Cold Email / Instantly", freq: "daily", children: [
+    { key: "instantly_replies", label: "Check Instantly for replies" },
+    { key: "instantly_demos", label: "Any new demo bookings to confirm?" }
+  ]},
+  { section: "postlaunch", key: "producthunt", label: "ProductHunt Warmup", freq: "daily", children: [
+    { key: "ph_cece", label: "Cece's account - 5+ upvotes/comments" },
+    { key: "ph_barry", label: "Barry's account - 5+ upvotes/comments" },
+    { key: "ph_shaun", label: "Shaun's account - 5+ upvotes/comments" },
+    { key: "ph_qc", label: "QC+ account - 5+ upvotes/comments" }
+  ]}
+];
+
+let checklistState = {}; // { [item_key]: { checked, value } }
+let checklistWeekCounts = {}; // { [item_key]: count this week }
+let postLaunchEnabled = false;
+
+function getUKDate() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
+}
+
+function getMondayOfWeek(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  const day = d.getDay(); // 0=Sun
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+async function loadChecklistFromAPI() {
+  const date = getUKDate();
+  const weekStart = getMondayOfWeek(date);
+  try {
+    const [dayRes, weekRes, settingRes] = await Promise.all([
+      fetch(`${API_BASE}/api/checklist?date=${date}`),
+      fetch(`${API_BASE}/api/checklist?weekStart=${weekStart}`),
+      fetch(`${API_BASE}/api/checklist?setting=_post_launch_enabled`)
+    ]);
+    const dayData = await dayRes.json();
+    const weekData = await weekRes.json();
+    const settingData = await settingRes.json();
+
+    // Build state map
+    checklistState = {};
+    if (Array.isArray(dayData.rows)) {
+      for (const row of dayData.rows) {
+        checklistState[row.item_key] = { checked: row.checked, value: row.value };
+      }
+    }
+
+    // Build week counts for 3x/week items
+    checklistWeekCounts = {};
+    if (Array.isArray(weekData.rows)) {
+      for (const row of weekData.rows) {
+        if (WEEKLY_ITEMS.includes(row.item_key)) {
+          checklistWeekCounts[row.item_key] = (checklistWeekCounts[row.item_key] || 0) + 1;
+        }
+      }
+    }
+
+    // Post-launch setting
+    const settingRows = settingData.rows || [];
+    postLaunchEnabled = settingRows.length > 0 && settingRows[0].checked === true;
+
+    if (state.activeView === "checklist") render();
+  } catch (e) {
+    console.error("checklist load error", e);
+  }
+}
+
+async function saveChecklistItem(item_key, checked, value) {
+  const date = getUKDate();
+  const body = { date, item_key, checked };
+  if (value !== undefined) body.value = value;
+  checklistState[item_key] = { checked, value };
+  if (WEEKLY_ITEMS.includes(item_key)) {
+    const prev = checklistWeekCounts[item_key] || 0;
+    checklistWeekCounts[item_key] = checked ? Math.max(prev, prev + 1) : Math.max(0, prev - 1);
+  }
+  render();
+  try {
+    await fetch(`${API_BASE}/api/checklist`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+  } catch (e) {
+    console.error("checklist save error", e);
+  }
+}
+
+async function savePostLaunchSetting(enabled) {
+  postLaunchEnabled = enabled;
+  render();
+  try {
+    await fetch(`${API_BASE}/api/checklist`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: "settings", item_key: "_post_launch_enabled", checked: enabled })
+    });
+  } catch (e) {
+    console.error("checklist setting save error", e);
+  }
+}
+
+function isChecked(key) { return !!(checklistState[key]?.checked); }
+function getValue(key) { return checklistState[key]?.value || ""; }
+
+function checklistProgressCounts() {
+  let done = 0, total = 0;
+  for (const item of CHECKLIST_DEF) {
+    if (item.section === "postlaunch" && !postLaunchEnabled) continue;
+    if (item.freq === "3x/week") {
+      const count = checklistWeekCounts[item.key] || 0;
+      if (count >= 3) continue; // done for week - don't count
+    }
+    total++;
+    if (item.inputType === "number") {
+      const v = parseInt(getValue(item.key), 10);
+      if (v > 0) done++;
+    } else {
+      if (isChecked(item.key)) done++;
+    }
+  }
+  return { done, total };
+}
+
+function checklistMarkup() {
+  const today = getUKDate();
+  const { done, total } = checklistProgressCounts();
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  const dailyItems = CHECKLIST_DEF.filter(i => i.section === "daily");
+  const postItems = CHECKLIST_DEF.filter(i => i.section === "postlaunch");
+
+  return `
+    <div class="checklist-wrap">
+      <div class="checklist-header">
+        <div class="checklist-date">${new Date(today + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
+        <div class="checklist-progress-row">
+          <span class="checklist-progress-label">${done} / ${total} tasks complete today</span>
+          <div class="checklist-progress-bar"><div class="checklist-progress-fill" style="width:${pct}%"></div></div>
+          <span class="checklist-progress-pct">${pct}%</span>
+        </div>
+      </div>
+
+      <div class="checklist-section">
+        <div class="checklist-section-title">DAILY OPERATIONS</div>
+        ${dailyItems.map(item => renderChecklistItem(item)).join("")}
+      </div>
+
+      <div class="checklist-section checklist-postlaunch ${postLaunchEnabled ? "" : "checklist-locked"}">
+        <div class="checklist-section-title">
+          POST-LAUNCH
+          ${postLaunchEnabled
+            ? `<button class="checklist-lock-btn" data-checklist-postlaunch="disable" title="Lock post-launch section">🔓 Enabled</button>`
+            : `<span class="checklist-lock-badge">🔒</span> <button class="checklist-lock-btn" data-checklist-postlaunch="enable" title="Enable post-launch section">Enable</button>`
+          }
+        </div>
+        ${!postLaunchEnabled ? `<p class="checklist-locked-note">Locked until app is live and Stripe is connected. Click Enable to unlock.</p>` : ""}
+        ${postLaunchEnabled ? postItems.map(item => renderChecklistItem(item)).join("") : ""}
+      </div>
+    </div>
+  `;
+}
+
+function renderChecklistItem(item) {
+  const checked = isChecked(item.key);
+  const children = item.children || [];
+  const allChildrenChecked = children.length === 0 || children.every(c => isChecked(c.key));
+  const childDone = children.filter(c => isChecked(c.key)).length;
+  const parentLocked = children.length > 0 && !allChildrenChecked;
+
+  const isWeekly = item.freq === "3x/week";
+  const weekCount = isWeekly ? (checklistWeekCounts[item.key] || 0) : 0;
+  const doneForWeek = isWeekly && weekCount >= 3;
+
+  const note = item.note || "";
+
+  if (item.inputType === "number") {
+    const val = getValue(item.key);
+    return `
+      <div class="checklist-item checklist-item-input">
+        <div class="checklist-item-main">
+          <label class="checklist-label">${item.label}</label>
+          <span class="checklist-item-note">${note}</span>
+          <input type="number" min="0" class="checklist-number-input" data-checklist-number="${item.key}" value="${val}" placeholder="0" />
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="checklist-item ${doneForWeek ? "checklist-done-week" : ""}">
+      <div class="checklist-item-main">
+        <input type="checkbox" class="checklist-cb" id="cl_${item.key}" data-checklist-key="${item.key}"
+          ${checked ? "checked" : ""}
+          ${parentLocked ? "disabled" : ""}
+          ${doneForWeek ? "disabled" : ""}
+        />
+        <label class="checklist-label ${parentLocked ? "checklist-label-locked" : ""}" for="cl_${item.key}">
+          ${item.label}
+          ${children.length > 0 ? `<span class="checklist-sub-count">${childDone}/${children.length}</span>` : ""}
+          ${isWeekly ? `<span class="checklist-freq-badge">${doneForWeek ? "Done for the week" : `${weekCount}/3 this week`}</span>` : ""}
+        </label>
+        ${note ? `<span class="checklist-item-note">${note}</span>` : ""}
+      </div>
+      ${children.length > 0 ? `
+        <div class="checklist-children">
+          ${children.map(child => `
+            <div class="checklist-child">
+              <input type="checkbox" class="checklist-cb" id="cl_${child.key}" data-checklist-key="${child.key}" ${isChecked(child.key) ? "checked" : ""} />
+              <label for="cl_${child.key}">${child.label}</label>
+            </div>
+          `).join("")}
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 function loadTasks() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -888,6 +1158,12 @@ function viewMarkup(view) {
       title: "Docs",
       copy: "Review drafts, reports, blogs, briefs, research, and other outputs created by your agents.",
       body: docsMarkup()
+    },
+    checklist: {
+      eyebrow: "Daily operations",
+      title: "Checklist",
+      copy: "Daily operations reset. Tracks Reddit accounts, social posting, DMs, reviews, and post-launch activities.",
+      body: checklistMarkup()
     },
     scraper: {
       eyebrow: "Social intelligence",
@@ -2881,6 +3157,7 @@ document.addEventListener("click", (event) => {
     if (nav.dataset.view === "memory") loadMemoriesFromAPI();
     if (nav.dataset.view === "docs") loadDocsFromAPI();
     if (nav.dataset.view === "calendar") loadCalendarFromAPI();
+    if (nav.dataset.view === "checklist") loadChecklistFromAPI();
     return;
   }
 
@@ -3309,9 +3586,29 @@ document.addEventListener("change", (event) => {
     state.editorDirty = true;
   }
   const upload = event.target.closest("[data-upload-agent]");
-  if (!upload || !upload.files?.[0]) return;
-  saveAgentImage(upload.dataset.uploadAgent, upload.files[0]);
+  if (upload && upload.files?.[0]) { saveAgentImage(upload.dataset.uploadAgent, upload.files[0]); return; }
+
+  // Checklist checkbox
+  const clCb = event.target.closest("[data-checklist-key]");
+  if (clCb && clCb.type === "checkbox") {
+    saveChecklistItem(clCb.dataset.checklistKey, clCb.checked);
+    return;
+  }
+  // Checklist number input
+  const clNum = event.target.closest("[data-checklist-number]");
+  if (clNum) {
+    const v = clNum.value;
+    saveChecklistItem(clNum.dataset.checklistNumber, parseInt(v, 10) > 0, v);
+    return;
+  }
 });
+
+document.addEventListener("click", (event) => {
+  const plBtn = event.target.closest("[data-checklist-postlaunch]");
+  if (plBtn) {
+    savePostLaunchSetting(plBtn.dataset.checklistPostlaunch === "enable");
+  }
+}, true); // capture phase so it runs before the main click handler
 
 function saveAgentImage(agentId, file) {
   const reader = new FileReader();
