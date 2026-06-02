@@ -385,9 +385,6 @@ const CHECKLIST_DEF = [
   { section: "daily", key: "reddit_sp", label: "u/Stock-Performer4939", freq: "daily", children: [
     { key: "reddit_sp_1", label: "Post 1" }, { key: "reddit_sp_2", label: "Post 2" }, { key: "reddit_sp_3", label: "Post 3" }
   ]},
-  { section: "daily", key: "reddit_hazel", label: "u/HazelGeeUnit", freq: "daily", children: [
-    { key: "reddit_hazel_1", label: "Post 1" }, { key: "reddit_hazel_2", label: "Post 2" }, { key: "reddit_hazel_3", label: "Post 3" }
-  ]},
   { section: "daily", key: "reddit_roofboss", label: "u/RoofBossBarry", freq: "daily", children: [
     { key: "reddit_roofboss_1", label: "Post 1" }, { key: "reddit_roofboss_2", label: "Post 2" }, { key: "reddit_roofboss_3", label: "Post 3" }
   ]},
