@@ -3703,13 +3703,15 @@ loadMemoriesFromAPI();
 loadDocsFromAPI();
 loadScraperFromAPI();
 loadCalendarFromAPI();
+loadChecklistFromAPI();
 setInterval(() => {
   loadRemoteState(true);
   loadMemoriesFromAPI();
   loadDocsFromAPI();
   loadScraperFromAPI();
   loadCalendarFromAPI();
-}, 5000);
+  loadChecklistFromAPI();
+}, 30000);
 
 // ── Mobile sidebar toggle ──
 const hamburgerBtn = document.getElementById("hamburgerBtn");
