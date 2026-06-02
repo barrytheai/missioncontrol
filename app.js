@@ -508,7 +508,7 @@ async function saveChecklistItem(item_key, checked, value) {
   try {
     await fetch(`${API_BASE}/api/state?checklist=1`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
       body: JSON.stringify(body)
     });
   } catch (e) {
@@ -522,7 +522,7 @@ async function savePostLaunchSetting(enabled) {
   try {
     await fetch(`${API_BASE}/api/state?checklist=1`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("OPENCLAW_AGENT_TOKEN") || "mc-openclaw-2026-secure"}` },
       body: JSON.stringify({ date: "settings", item_key: "_post_launch_enabled", checked: enabled })
     });
   } catch (e) {
