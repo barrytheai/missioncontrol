@@ -382,16 +382,16 @@ let taskSaveLockUntil = 0; // timestamp ms — blocks loadRemoteState after a ta
 // ── Checklist state ──────────────────────────────────────────────────────────
 const WEEKLY_ITEMS = ["instagram", "tiktok", "linkedin", "facebook"];
 const CHECKLIST_DEF = [
-  { section: "daily", key: "reddit_sp", label: "u/Stock-Performer4939", freq: "daily", children: [
+  { section: "daily", key: "reddit_sp", label: "u/Stock-Performer4939 (LinDesBet)", freq: "daily", children: [
     { key: "reddit_sp_1", label: "Post 1" }, { key: "reddit_sp_2", label: "Post 2" }, { key: "reddit_sp_3", label: "Post 3" }
   ]},
-  { section: "daily", key: "reddit_roofboss", label: "u/RoofBossBarry", freq: "daily", children: [
+  { section: "daily", key: "reddit_roofboss", label: "u/RoofBossBarry (Barry)", freq: "daily", children: [
     { key: "reddit_roofboss_1", label: "Post 1" }, { key: "reddit_roofboss_2", label: "Post 2" }, { key: "reddit_roofboss_3", label: "Post 3" }
   ]},
-  { section: "daily", key: "reddit_lowtourist", label: "u/Low-Tourist-5813", freq: "daily", children: [
+  { section: "daily", key: "reddit_lowtourist", label: "u/Low-Tourist-5813 (Cece)", freq: "daily", children: [
     { key: "reddit_lowtourist_1", label: "Post 1" }, { key: "reddit_lowtourist_2", label: "Post 2" }, { key: "reddit_lowtourist_3", label: "Post 3" }
   ]},
-  { section: "daily", key: "reddit_someeye", label: "u/Some_Eye4231", freq: "daily", children: [
+  { section: "daily", key: "reddit_someeye", label: "u/Some_Eye4231 (Shaun)", freq: "daily", children: [
     { key: "reddit_someeye_1", label: "Post 1" }, { key: "reddit_someeye_2", label: "Post 2" }, { key: "reddit_someeye_3", label: "Post 3" }
   ]},
   { section: "daily", key: "x", label: "X / Twitter", freq: "daily", children: [
